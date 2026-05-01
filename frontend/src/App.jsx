@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-
+import AddProduct from './pages/AddProduct';
 
 function App() {
   return (
@@ -75,9 +75,16 @@ function App() {
             Calculator
           </Link>
         </nav>
-</div>
-  </Router>
 
+  
+      <Routes>
+            <Route path="/add" element={<AddProduct />} />
+            
+          </Routes>
+
+          </div>
+    </Router>
+        
 );
   }
 export default App;
