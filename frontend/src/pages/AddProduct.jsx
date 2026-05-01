@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addProduct } from '../services/api';
+import { addProduct } from '../services/api'; 
 
 const AddProduct = () => {
     const [formData, setFormData] = useState({
@@ -79,7 +79,7 @@ const AddProduct = () => {
                     alignSelf: 'center', 
                     transition: '0.2s'
                 }}>
-                    Save Succulent
+                    Save Succulents
                 </button>
             </form>
         </div>
