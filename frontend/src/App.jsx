@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import AddProduct from './pages/AddProduct';
+import CostingCalculator from './pages/CostingCalculator';
 
 function App() {
   return (
@@ -79,7 +80,7 @@ function App() {
   
       <Routes>
             <Route path="/add" element={<AddProduct />} />
-            
+            <Route path="/calculator" element={<CostingCalculator />} /> 
           </Routes>
 
           </div>
