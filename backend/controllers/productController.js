@@ -6,7 +6,7 @@ exports.getProducts = async (req, res) => {
         const products = await Product.find();
         res.json(products);
     } catch (error) {
-        console.error("🔥 GET PRODUCTS ERROR:", error);
+        console.error("GET PRODUCTS ERROR:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -80,14 +80,13 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
-exports.createProduct = async (req, res) => {
-    console.log("INCOMING DATA FROM REACT:", req.body);
-
+exports.updateProduct = async (req, res) => {
+    console.log("INCOMING UPDATE DATA:", req.body);
     try {
-        const { name, type, plants, potCost, soilCost, laborCost, markupPercentage, stockQuantity, imageUrl } = req.body;
+        const { name, type, plants, potCost, soilCost, laborCost, markupPercentage, stockQuantity, imageUrl, costPrice, sellingPrice, totalCost } = req.body;
 
-        // 👇 FIX: This stops Mongoose from crashing if you leave a cost box blank! 👇
-        const sanitizedPlants = plants ? plants.map(plant => ({
+        
+        const sanitizedPlants = Array.isArray(plants) ? plants.map(plant => ({
             name: plant.name || 'Unnamed Plant',
             cost: Number(plant.cost) || 0 
         })) : [];
@@ -99,29 +98,40 @@ exports.createProduct = async (req, res) => {
         const labor = Number(laborCost) || 0;
         const markup = Number(markupPercentage) || 0;
 
-        const totalCost = totalPlantsCost + pot + soil + labor;
-        const profitAmount = totalCost * (markup / 100);
-        const sellingPrice = totalCost + profitAmount;
+        let finalTotalCost = 0;
+        let finalSellingPrice = 0;
+        
+        // for the add product and calculator computation
+        if (sanitizedPlants.length > 0 || pot > 0 || soil > 0) {
+            finalTotalCost = totalPlantsCost + pot + soil + labor;
+            finalSellingPrice = finalTotalCost + (finalTotalCost * (markup / 100));
+        } else {
+            finalTotalCost = Number(totalCost) || Number(costPrice) || 0;
+            finalSellingPrice = Number(sellingPrice) || 0;
+        }
 
-        const newProduct = new Product({
-            name,
-            type,
-            plants: sanitizedPlants, // <-- Make sure to use sanitizedPlants here!
+        const updateData = {
+            name: name || 'Unnamed Item', 
+            type: type || 'Arrangement',
+            plants: sanitizedPlants, 
             potCost: pot,
             soilCost: soil,
             laborCost: labor,
             markupPercentage: markup,
-            totalCost,
-            sellingPrice,
+            totalCost: finalTotalCost,
+            sellingPrice: finalSellingPrice,
             stockQuantity: Number(stockQuantity) || 0,
-            imageUrl
-        });
+            imageUrl: imageUrl || ''
+        };
 
-        const savedProduct = await newProduct.save();
-        res.status(201).json(savedProduct);
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updatedProduct) {
+            return res.status(404).json({ message: "Product not found in database." });
+        }
+        res.json(updatedProduct);
 
     } catch (error) {
-        console.error("🔥 CREATE PRODUCT ERROR:", error);
+        console.error("UPDATE PRODUCT ERROR:", error);
         res.status(400).json({ message: error.message });
     }
 };
