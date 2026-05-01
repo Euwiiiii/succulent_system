@@ -18,78 +18,89 @@ const AddProduct = () => {
     const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Destructure fields to check them
-        const { name, type, costPrice, sellingPrice, stockQuantity } = formData;
+    // Validation Check for Name and Stock Quantity
+    if (!formData.name.trim() || !formData.stockQuantity) {
+        alert("⚠️ Please provide details in the required fields.");
+        return; // This stops the code from reaching the API call
+    }
 
-        // Check if any required field is empty 
-        if (!name.trim() || !type.trim() || !costPrice || !sellingPrice || !stockQuantity) {
-            alert("Please fill in all required plant details!");
-            return; // Stop the submission
-        }
+    // Pricing Warning (Existing logic)
+    if (Number(formData.sellingPrice) < Number(formData.costPrice)) {
+        if (!window.confirm("Selling price is lower than cost! Are you sure?")) return;
+    }
 
-        try {
-            await addProduct(formData);
-            alert(" Succulent added successfully!");
-            // Reset form...
-        } catch (error) {
-            alert("Failed to add product.");
-        }
-    };
+    // Proceed with Saving
+    try {
+        await addProduct(formData);
+        alert("🌱 Succulent added successfully!");
+        setFormData({ name: '', type: '', costPrice: '', sellingPrice: '', stockQuantity: '', imageUrl: '' });
+    } catch (error) {
+        console.error("Error adding product", error);
+        alert("Failed to add product.");
+    }
+};
+
     return (
-        <div style={{ 
-            padding: '40px', 
+    <div style={{ 
+        padding: '40px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f8fffb' 
+    }}>
+        <h2 style={{ color: '#2d6a4f', fontWeight: 'bold', marginBottom: '20px' }}>ADD NEW SUCCULENTS</h2>
+        
+        <form onSubmit={handleSubmit} style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            alignItems: 'center' 
+            width: '100%', 
+            maxWidth: '400px', 
+            gap: '15px',
+            padding: '30px',
+            borderRadius: '15px',
+            backgroundColor: '#2d6a4f', 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
         }}>
-            <h2 style={{ color: '#2d6a4f', fontWeight: 'bold' }}>ADD NEW SUCCULENTS</h2>
+            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9em' }}>Plant Details</label>
+            <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
+            <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
             
-            <form onSubmit={handleSubmit} style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                width: '100%', 
-                maxWidth: '400px', 
-                gap: '15px',
-                padding: '20px',
-                border: '1px solid #ddd',
+            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9em', marginTop: '10px' }}>Pricing & Stock</label>
+            <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
+            <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
+            <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
+            
+            <input name="imageUrl" value={formData.imageUrl} placeholder="Image URL (Optional)" onChange={handleChange} style={inputStyle} required />
+            
+            
+            <button type="submit" style={{ 
+                padding: '14px 24px', 
+                cursor: 'pointer', 
+                backgroundColor: '#d8f3dc', 
+                color: '#1b4332', 
+                border: 'none', 
                 borderRadius: '8px',
-                backgroundColor: '#AD9664'
+                fontWeight: 'bold',
+                fontSize: '1.1em',
+                marginTop: '20px',
+                alignSelf: 'center', 
+                width: '100%', 
+                transition: '0.3s'
             }}>
-                <label style={{ color: '#2E311A', fontWeight: 'bold' }}>Plant Details</label>
-                <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
-                <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
-                
-                <label style={{ color: '#2E311A', fontWeight: 'bold' }}>Pricing & Stock</label>
-                <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
-                <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
-                <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
-                
-                <input name="imageUrl" value={formData.imageUrl} placeholder="Image URL (Optional)" onChange={handleChange} style={inputStyle} />
-                
-                {/* Centered Button */}
-                <button type="submit" style={{ 
-                    padding: '12px 24px', 
-                    cursor: 'pointer', 
-                    backgroundColor: '#2d6a4f', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '5px',
-                    fontWeight: 'bold',
-                    marginTop: '10px',
-                    alignSelf: 'center', 
-                    transition: '0.2s'
-                }}>
-                    Save Succulents
-                </button>
-            </form>
-        </div>
-    );
+                Save Succulents 
+            </button>
+        </form>
+    </div>
+);
 };
 
 const inputStyle = {
-    padding: '10px',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
+    padding: '12px',
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: '#f8fffb',
+    fontSize: '1em'
 };
 
 export default AddProduct;
