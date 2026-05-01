@@ -32,7 +32,7 @@ const AddProduct = () => {
     // Proceed with Saving
     try {
         await addProduct(formData);
-        alert("🌱 Succulent added successfully!");
+        alert("Succulent added successfully!");
         setFormData({ name: '', type: '', costPrice: '', sellingPrice: '', stockQuantity: '', imageUrl: '' });
     } catch (error) {
         console.error("Error adding product", error);
@@ -62,11 +62,11 @@ const AddProduct = () => {
             backgroundColor: '#2d6a4f', 
             boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
         }}>
-            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9em' }}>Plant Details</label>
+            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem' }}>Plant Details</label>
             <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
             <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
             
-            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9em', marginTop: '10px' }}>Pricing & Stock</label>
+            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>Pricing & Stock</label>
             <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
             <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
             <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
@@ -82,7 +82,7 @@ const AddProduct = () => {
                 border: 'none', 
                 borderRadius: '8px',
                 fontWeight: 'bold',
-                fontSize: '1.1em',
+                fontSize: '1.2rem',
                 marginTop: '20px',
                 alignSelf: 'center', 
                 width: '100%', 
@@ -100,7 +100,7 @@ const inputStyle = {
     borderRadius: '6px',
     border: 'none',
     backgroundColor: '#f8fffb',
-    fontSize: '1em'
+    fontSize: '1rem'
 };
 
 export default AddProduct;
