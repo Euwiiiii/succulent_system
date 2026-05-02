@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use('/api/products', productRoutes);
 
-// Static Files
+
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Catch-all Route 
