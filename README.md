@@ -4,7 +4,7 @@ The **Succulent Inventory System** is a full-stack inventory management applicat
 
 ## Key Features
 
-*   **Reactive Costing Engine**: Automatically calculates total costs and selling prices by aggregating the costs of individual plants, pots, soil, and labor, then applying a customizable markup percentage.
+*   **Costing **: Automatically calculates total costs and selling prices by aggregating the costs of individual plants, pots, soil, and labor, then applying a customizable markup percentage.
 *   **Live Edit Preview**: Includes an "Advanced Edit" modal that allows users to modify inventory components (like pot or soil costs) and see the updated prices in real-time before saving.
 *   **Inventory Intelligence**: Visual indicators for stock levels, including "Low Stock" alerts to help maintain optimal inventory levels.
 *   **Flexible Product Modes**: Supports "Single Plant" entries for quick inventory additions and "Arrangement" entries for multi-component products.
