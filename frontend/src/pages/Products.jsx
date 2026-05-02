@@ -11,13 +11,20 @@ const Products = () => {
     }, []);
 
     const fetchProducts = async () => {
-        try {
-            const response = await getProducts();
+    try {
+        const response = await getProducts();
+        // Siguraduhin na array ang data bago i-set
+        if (response.data && Array.isArray(response.data)) {
             setProducts(response.data);
-        } catch (error) {
-            console.error("Error fetching products", error);
+        } else {
+            console.warn("Backend did not return an array:", response.data);
+            setProducts([]); // Ibalik sa empty array kung hindi listahan
         }
-    };
+    } catch (error) {
+        console.error("Error fetching products", error);
+        setProducts([]); // Ibalik sa empty array kapag may error
+    }
+};
 
     const handleDelete = async (id, name) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete "${name}"?`);
@@ -77,7 +84,7 @@ const Products = () => {
                 
                 {products.length === 0 ? <p>No succulents in inventory yet!</p> : null}
                 
-                {products.map(product => (
+                {Array.isArray(products) && products.map((product) => (
                     <div key={product._id} style={{ border: '1px solid #ccc', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '8px', backgroundColor: '#fdfdfd', position: 'relative' }}>
                         <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
                             {/* Edit Button */}
