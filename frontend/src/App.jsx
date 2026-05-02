@@ -46,7 +46,7 @@ function App() {
             />
             Inventory
           </Link>
-          {/* <Link to="/add" style={{ 
+          <Link to="/add" style={{ 
             color: 'white', 
             textDecoration: 'none', 
             fontWeight: 'bold', 
@@ -60,7 +60,7 @@ function App() {
               style={{ width: '20px', height: '20px' }} 
             />
             Add Product
-          </Link> */}
+          </Link>
           <Link to="/calculator" style={{ 
             color: 'white', 
             textDecoration: 'none', 
@@ -80,8 +80,8 @@ function App() {
 
   
       <Routes>
-            {/* What if deletemo na ito? 
-            <Route path="/add" element={<AddProduct />} />*/}
+            
+            <Route path="/add" element={<AddProduct />} />
             <Route path="/calculator" element={<CostingCalculator />} /> 
             <Route path="/" element={<Products />} />
           </Routes>
