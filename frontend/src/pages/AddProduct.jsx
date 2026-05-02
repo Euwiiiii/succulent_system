@@ -2,97 +2,103 @@ import React, { useState } from 'react';
 import { addProduct } from '../services/api'; 
 
 const AddProduct = () => {
+    // 1. Added missing state to track form inputs
     const [formData, setFormData] = useState({
-        name: '', type: '', costPrice: '', sellingPrice: '', stockQuantity: '', imageUrl: ''
+        name: '', 
+        type: 'Single Plant', 
+        costPrice: '', 
+        sellingPrice: '', 
+        stockQuantity: '', 
+        imageUrl: ''
     });
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
-
-        // Validation: Prevent negative numbers
         if (type === 'number' && value < 0) return;
-
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = async (e) => {
-    e.preventDefault();
+    const handleSubmit = async (e) => { 
+        e.preventDefault();
 
-    // Validation Check for Name and Stock Quantity
-    if (!formData.name.trim() || !formData.stockQuantity) {
-        alert("⚠️ Please provide details in the required fields.");
-        return; // This stops the code from reaching the API call
-    }
+        if (!formData.name.trim() || !formData.stockQuantity) {
+            alert("⚠️ Please provide details in the required fields.");
+            return;
+        }
 
-    // Pricing Warning (Existing logic)
-    if (Number(formData.sellingPrice) < Number(formData.costPrice)) {
-        if (!window.confirm("Selling price is lower than cost! Are you sure?")) return;
-    }
+        // 2. The payload logic lives ONLY here
+        const payload = {
+            ...formData,
+            totalCost: Number(formData.costPrice) || 0,
+            sellingPrice: Number(formData.sellingPrice) || 0,
+            potCost: 0, 
+            soilCost: 0, 
+            laborCost: 0, 
+            markupPercentage: 0 
+        };
 
-    // Proceed with Saving
-    try {
-        await addProduct(formData);
-        alert("Succulent added successfully!");
-        setFormData({ name: '', type: '', costPrice: '', sellingPrice: '', stockQuantity: '', imageUrl: '' });
-    } catch (error) {
-        console.error("Error adding product", error);
-        alert("Failed to add product.");
-    }
-};
+        try {
+            await addProduct(payload); 
+            alert("Succulent added successfully!");
+            // Reset form after success
+            setFormData({ name: '', type: 'Single Plant', costPrice: '', sellingPrice: '', stockQuantity: '', imageUrl: '' });
+        } catch (error) {
+            console.error("Error adding product", error);
+            alert("Failed to add product.");
+        }
+    };
 
     return (
-    <div style={{ 
-        padding: '40px', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f8fffb' 
-    }}>
-        <h2 style={{ color: '#2d6a4f', fontWeight: 'bold', marginBottom: '20px' }}>ADD NEW SUCCULENTS</h2>
-        
-        <form onSubmit={handleSubmit} style={{ 
+        <div style={{ 
+            padding: '40px', 
             display: 'flex', 
             flexDirection: 'column', 
-            width: '100%', 
-            maxWidth: '400px', 
-            gap: '15px',
-            padding: '30px',
-            borderRadius: '15px',
-            backgroundColor: '#2d6a4f', 
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            alignItems: 'center',
+            minHeight: '100vh',
+            backgroundColor: '#f8fffb' 
         }}>
-            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem' }}>Plant Details</label>
-            <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
-            <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
+            <h2 style={{ color: '#2d6a4f', fontWeight: 'bold', marginBottom: '20px', fontSize: '2rem' }}>ADD NEW SUCCULENTS</h2>
             
-            <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>Pricing & Stock</label>
-            <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
-            <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
-            <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
-            
-            <input name="imageUrl" value={formData.imageUrl} placeholder="Image URL (Optional)" onChange={handleChange} style={inputStyle} required />
-            
-            
-            <button type="submit" style={{ 
-                padding: '14px 24px', 
-                cursor: 'pointer', 
-                backgroundColor: '#d8f3dc', 
-                color: '#1b4332', 
-                border: 'none', 
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                fontSize: '1.2rem',
-                marginTop: '20px',
-                alignSelf: 'center', 
+            <form onSubmit={handleSubmit} style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
                 width: '100%', 
-                transition: '0.3s'
+                maxWidth: '400px', 
+                gap: '15px',
+                padding: '30px',
+                borderRadius: '15px',
+                backgroundColor: '#2d6a4f', 
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
             }}>
-                Save Succulents 
-            </button>
-        </form>
-    </div>
-);
+                <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem' }}>Plant Details</label>
+                <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
+                <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
+                
+                <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>Pricing & Stock</label>
+                <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
+                <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
+                <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
+                
+                <input name="imageUrl" value={formData.imageUrl} placeholder="e.g., https://image.com/plant.jpg" onChange={handleChange} style={inputStyle} required />
+                
+                <button type="submit" style={{ 
+                    padding: '14px 24px', 
+                    cursor: 'pointer', 
+                    backgroundColor: '#d8f3dc', 
+                    color: '#1b4332', 
+                    border: 'none', 
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    fontSize: '1.2rem',
+                    marginTop: '20px',
+                    width: '100%', 
+                    transition: '0.3s'
+                }}>
+                    Save Succulents 
+                </button>
+            </form>
+        </div>
+    );
 };
 
 const inputStyle = {

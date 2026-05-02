@@ -21,5 +21,11 @@
     "peacock.color": "#42b883",
     "conventionalCommits.scopes": [
         "Created addproduct design"
-    ]
+    ],
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/0d2168af-5583-467a-ade5-d41c29df709d/resourceGroups/Succulent-System-Web/providers/Microsoft.Web/sites/Succulent-System",
+    "appService.deploySubpath": "backend"
 }

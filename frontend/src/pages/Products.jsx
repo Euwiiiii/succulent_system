@@ -89,7 +89,14 @@ const Products = () => {
                         <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
                             {/* Edit Button */}
                         <button 
-                            onClick={() => setEditingProduct(product)}
+                            onClick={() => setEditingProduct({
+                                    ...product,
+                                    plants: product.plants || [],
+                                    potCost: product.potCost || 0,
+                                    soilCost: product.soilCost || 0,
+                                    laborCost: product.laborCost || 0,
+                                    markupPercentage: product.markupPercentage || 0
+                                })}
                             style={{ 
                                 background: '#2be071', 
                                 border: 'none', 
