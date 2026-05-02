@@ -71,15 +71,9 @@ const AddProduct = () => {
                 <input name="name" value={formData.name} placeholder="Name (e.g., Jade Plant)" onChange={handleChange} style={inputStyle} required />
                 <input name="type" value={formData.type} placeholder="Type (e.g., Crassula)" onChange={handleChange} style={inputStyle} required />
                 
-                <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>Pricing Breakdown</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <input name="potCost" value={formData.potCost} type="number" placeholder="Pot Cost (₱)" onChange={handleChange} style={inputStyle} required />
-                    <input name="soilCost" value={formData.soilCost} type="number" placeholder="Soil Cost (₱)" onChange={handleChange} style={inputStyle} required />
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <input name="laborCost" value={formData.laborCost} type="number" placeholder="Labor (₱)" onChange={handleChange} style={inputStyle} required />
-                    <input name="markupPercentage" value={formData.markupPercentage} type="number" placeholder="Margin (%)" onChange={handleChange} style={inputStyle} required />
-                </div>
+                <label style={{ color: '#d8f3dc', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>Pricing & Stock</label>
+                <input name="costPrice" value={formData.costPrice} type="number" placeholder="Cost Price (₱)" onChange={handleChange} style={inputStyle} required />
+                <input name="sellingPrice" value={formData.sellingPrice} type="number" placeholder="Selling Price (₱)" onChange={handleChange} style={inputStyle} required />
                 
                 
                 <input name="stockQuantity" value={formData.stockQuantity} type="number" placeholder="Initial Stock" onChange={handleChange} style={inputStyle} required />
