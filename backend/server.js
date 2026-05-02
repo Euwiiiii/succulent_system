@@ -15,15 +15,12 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection 
-// const dbURI = process.env.MONGODB_URI || 'mongodb://euwi2:saythename17@ac-t19kekk-shard-00-00.gubww3u.mongodb.net:27017,ac-t19kekk-shard-00-01.gubww3u.mongodb.net:27017,ac-t19kekk-shard-00-02.gubww3u.mongodb.net:27017/?ssl=true&replicaSet=atlas-veaca4-shard-0&authSource=admin&appName=Cluster0';
-// mongoose.connect(dbURI)
-//     .then(() => console.log('✅ MongoDB Connected'))
-//     .catch(err => console.log('❌ MongoDB Connection Error:', err));
+// Local fallback: If process.env.MONGODB_URI is missing, use your string
+const dbURI = process.env.MONGODB_URI || 'mongodb://euwi2:saythename17@ac-t19kekk-shard-00-00.gubww3u.mongodb.net:27017,ac-t19kekk-shard-00-01.gubww3u.mongodb.net:27017,ac-t19kekk-shard-00-02.gubww3u.mongodb.net:27017/?ssl=true&replicaSet=atlas-veaca4-shard-0&authSource=admin&appName=Cluster0';
 
-// (HUWAG MONG KALIMUTAN ) 
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log(err));
+mongoose.connect(dbURI)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ DB Error:', err));
 
 
 

@@ -118,20 +118,20 @@ const CostingCalculator = () => {
                         <div style={{ display: 'flex', gap: '2px' }}>
                             <div style={{ flex: 1, textAlign: 'center' }}>
                                 <label style={smallLabel}>Pot (₱)</label>
-                                <input name="potCost" type="number" value={supplies.potCost} onChange={handleSupplyChange} style={{...inputStyle, width: '90%'}} />
+                                <input name="potCost" type="number" placeholder="Enter Pot Cost (₱)" value={supplies.potCost} onChange={handleSupplyChange} style={{...inputStyle, width: '90%'}} />
                             </div>
                             <div style={{ flex: 1, textAlign: 'center' }}>
                                 <label style={smallLabel}>Soil (₱)</label>
-                                <input name="soilCost" type="number" value={supplies.soilCost} onChange={handleSupplyChange} style={{...inputStyle, width: '90%'}} />
+                                <input name="soilCost" type="number" placeholder="Enter Soil Cost (₱)" value={supplies.soilCost} onChange={handleSupplyChange} style={{...inputStyle, width: '90%'}} />
                             </div>
                         </div>
                         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <label style={smallLabel}>Labor Cost (₱)</label>
-                            <input name="laborCost" type="number" value={supplies.laborCost} onChange={handleSupplyChange} style={{...inputStyle, width: '95%'}} />
+                            <input name="laborCost" type="number" placeholder="Enter Labor Cost (₱)" value={supplies.laborCost} onChange={handleSupplyChange} style={{...inputStyle, width: '95%'}} />
                         </div>
                         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <label style={smallLabel}>Profit Margin (%)</label>
-                            <input name="markupPercentage" type="number" value={supplies.markupPercentage} onChange={handleSupplyChange} style={{...inputStyle, width: '95%'}} />
+                            <input name="markupPercentage" type="number" placeholder="Markup %" value={supplies.markupPercentage} onChange={handleSupplyChange} style={{...inputStyle, width: '95%'}} />
                         </div>
                           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <label style={smallLabel}>Picture URL</label>
@@ -141,7 +141,7 @@ const CostingCalculator = () => {
                 </div>
 
                 {/* Right Results Column */}
-                <div style={{ width: '350px', padding: '30px', backgroundColor: '#2d6a4f', color: 'white', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                <div style={{ width: '350px', padding: '30px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', color: '#333', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                     <h3 style={{ textAlign: 'center', marginBottom: '25px', fontSize: '1.5rem' }}>Pricing Breakdown</h3>
                     
                     <div style={resultRow}><span>Plants:</span><span>₱{totalPlantsCost.toFixed(2)}</span></div>
@@ -149,7 +149,7 @@ const CostingCalculator = () => {
                     <div style={resultRow}><span>Labor:</span><span>₱{labor.toFixed(2)}</span></div>
                     
                     <div style={{ ...resultRow, margin: '20px 0', fontSize: '1rem', fontWeight: 'bold' }}><span>Base Cost:</span><span>₱{totalCost.toFixed(2)}</span></div>
-                    <div style={resultRow}><span>Profit Margin:</span><span style={{ color: '#95d5b2' }}>+ ₱{profitAmount.toFixed(2)}</span></div>
+                    <div style={resultRow}><span>Profit Margin:</span><span style={{ color: '#2d6a4f' }}>+ ₱{profitAmount.toFixed(2)}</span></div>
                     <hr style={{ opacity: 0.3, margin: '20px 0' }} />
                     <div style={{ ...resultRow, fontSize: '1.2rem', fontWeight: 'bold' }}><span>Selling Price:</span><span>₱{recommendedPrice.toFixed(2)}</span></div>
                     
@@ -167,9 +167,9 @@ const inputStyle = { padding: '12px', border: '1px solid #ccc', borderRadius: '5
 const smallLabel = { display: 'block', fontWeight: 'bold', marginBottom: '5px', color: '#333' };
 const resultRow = { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' };
 const saveButtonStyle = { 
-    width: '100%', padding: '15px', marginTop: '30px', backgroundColor: '#d8f3dc', 
-    color: '#1b4332', border: 'none', borderRadius: '8px', fontSize: '1.2rem', 
-    fontWeight: 'bold', cursor: 'pointer' 
+    width: '100%', padding: '15px', marginTop: '30px', backgroundColor: '#2d6a4f', 
+    color: 'white', border: 'none', borderRadius: '8px', fontSize: '1.2rem', 
+    fontWeight: 'bold', cursor: 'pointer', transition: '0.3s'
 };
 
 export default CostingCalculator;

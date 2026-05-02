@@ -83,8 +83,8 @@ const AddProduct = () => {
                 <button type="submit" style={{ 
                     padding: '14px 24px', 
                     cursor: 'pointer', 
-                    backgroundColor: '#d8f3dc', 
-                    color: '#1b4332', 
+                    backgroundColor: '#2d6a4f', 
+                    color: 'white', 
                     border: 'none', 
                     borderRadius: '8px',
                     fontWeight: 'bold',

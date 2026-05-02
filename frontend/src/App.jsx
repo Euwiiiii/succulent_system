@@ -16,7 +16,7 @@ function App() {
       }}>
      </div>
         {/* Navigation Bar */}
-        <nav style={{ padding: '15px 20px', backgroundColor: '#49ac7f', color: 'white', display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <nav style={{ padding: '15px 20px', backgroundColor: '#2d6a4f', color: 'white', display: 'flex', gap: '20px', alignItems: 'center' }}>
           <h2 style={{color: 'white', 
               margin: 0,             
               marginRight: 'auto',   

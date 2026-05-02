@@ -4,6 +4,8 @@ import { getProducts, deleteProduct, updateProduct} from '../services/api';
 const Products = () => {
     const [products, setProducts] = useState([]);
     const [editingProduct, setEditingProduct] = useState(null);
+    const [editTotalCost, setEditTotalCost] = useState(0);
+    const [editSellingPrice, setEditSellingPrice] = useState(0);
 
 
     useEffect(() => {
@@ -58,9 +60,28 @@ const Products = () => {
         setEditingProduct({ ...editingProduct, plants: updatedPlants });
     };
 
-    let editTotalCost = 0;
-    let editSellingPrice = 0;
-
+    useEffect(() => {
+        if (editingProduct) {
+            const plantsCost = (editingProduct.plants || []).reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
+            const pot = Number(editingProduct.potCost) || 0;
+            const soil = Number(editingProduct.soilCost) || 0;
+            const labor = Number(editingProduct.laborCost) || 0;
+            const markup = Number(editingProduct.markupPercentage) || 0;
+            
+            if (editingProduct.type === 'Single Plant' && plantsCost === 0 && pot === 0 && soil === 0 && labor === 0) {
+                setEditTotalCost(Number(editingProduct.costPrice || editingProduct.totalCost) || 0);
+                setEditSellingPrice(Number(editingProduct.sellingPrice) || 0);
+            } else {
+                let baseCost = plantsCost;
+                if (plantsCost === 0 && editingProduct.type === 'Single Plant') {
+                    baseCost = Number(editingProduct.costPrice || editingProduct.totalCost) || 0;
+                }
+                const total = baseCost + pot + soil + labor;
+                setEditTotalCost(total);
+                setEditSellingPrice(total + (total * (markup / 100)));
+            }
+        }
+    }, [editingProduct]);
 
     const handleSaveEdit = async () => {
         try {
@@ -76,7 +97,7 @@ const Products = () => {
 
     return (
         <div style={{ padding: '20px'}}>
-            <h2 style={{ padding: '20px', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT INVENTORY</h2>
+            <h2 style={{ padding: '20px', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
             
             {/* display products in a grid layout with 3 columns*/}
         
@@ -98,7 +119,7 @@ const Products = () => {
                                     markupPercentage: product.markupPercentage || 0
                                 })}
                             style={{ 
-                                background: '#2be071', 
+                                background: '#2d6a4f', 
                                 border: 'none', 
                                 borderRadius: '4px', 
                                 cursor: 'pointer', 
@@ -151,12 +172,12 @@ const Products = () => {
                             </div>
                         )}
                         {/* New fix for the based price and selling price */}
-                        <div style={{ marginTop: '10px', textAlign: 'left' }}>
-                            <p style={{ margin: 0, fontSize: '0.9em', color: '#555' }}>
-                                <strong>Cost:</strong> ₱{product.totalCost?.toFixed(2)}
+                        <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
+                                <strong>Cost Price:</strong> ₱{Number(product.totalCost || 0).toFixed(2)}
                             </p>
-                            <p style={{ margin: '5px 0 0 0', fontSize: '1.1em', color: '#2d6a4f', fontWeight: 'bold' }}>
-                                <strong>Price:</strong> ₱{product.sellingPrice?.toFixed(2)}
+                            <p style={{ margin: '5px 0', color: '#2d6a4f', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                                <strong>Selling Price:</strong> ₱{Number(product.sellingPrice || 0).toFixed(2)}
                             </p>
                         </div>
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
@@ -202,22 +223,22 @@ const Products = () => {
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Pot (₱)</label>
-                                <input name="potCost" type="number" value={editingProduct?.potCost || ''} onChange={handleEditChange} style={inputStyle} />
+                                <input name="potCost" type="number" placeholder="Enter Pot Cost (₱)" value={editingProduct?.potCost || ''} onChange={handleEditChange} style={inputStyle} />
                             </div>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Soil (₱)</label>
-                                <input name="soilCost" type="number" value={editingProduct?.soilCost || ''} onChange={handleEditChange} style={inputStyle} />
+                                <input name="soilCost" type="number" placeholder="Enter Soil Cost (₱)" value={editingProduct?.soilCost || ''} onChange={handleEditChange} style={inputStyle} />
                             </div>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Labor (₱)</label>
-                                <input name="laborCost" type="number" value={editingProduct?.laborCost || ''} onChange={handleEditChange} style={inputStyle} />
+                                <input name="laborCost" type="number" placeholder="Enter Labor Cost (₱)" value={editingProduct?.laborCost || ''} onChange={handleEditChange} style={inputStyle} />
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Margin (%)</label>
-                                <input name="markupPercentage" type="number" value={editingProduct?.markupPercentage || ''} onChange={handleEditChange} style={inputStyle} />
+                                <input name="markupPercentage" type="number" placeholder="Markup %" value={editingProduct?.markupPercentage || ''} onChange={handleEditChange} style={inputStyle} />
                             </div>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Stock</label>
@@ -227,6 +248,18 @@ const Products = () => {
                         
                         <label style={labelStyle}>Image URL</label>
                         <input name="imageUrl" value={editingProduct?.imageUrl || ''} onChange={handleEditChange} style={inputStyle} />
+
+                        {/* Live Recalculation Display */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
+                            <div style={{ flex: 1, textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#555' }}>Live Total Cost</span><br/>
+                                <strong>₱{editTotalCost.toFixed(2)}</strong>
+                            </div>
+                            <div style={{ flex: 1, textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Live Selling Price</span><br/>
+                                <strong style={{ color: '#2d6a4f' }}>₱{editSellingPrice.toFixed(2)}</strong>
+                            </div>
+                        </div>
 
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <button onClick={handleSaveEdit} style={saveBtnStyle}>Save Updates</button>

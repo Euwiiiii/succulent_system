@@ -17,12 +17,12 @@ exports.createProduct = async (req, res) => {
 
     try {
         // Extract the raw data sent from React
-        const { name, type, plants, potCost, soilCost, laborCost, markupPercentage, stockQuantity, imageUrl } = req.body;
+        const { name, type, plants, potCost, soilCost, laborCost, markupPercentage, stockQuantity, imageUrl, costPrice, sellingPrice } = req.body;
 
         // Perform the Math on the Backend (Security Best Practice)
         // Add up all plants in the array
         const totalPlantsCost = plants ? plants.reduce((sum, plant) => sum + (Number(plant.cost) || 0), 0) : 0;
-        
+
         // Convert incoming strings to strict numbers
         const pot = Number(potCost) || 0;
         const soil = Number(soilCost) || 0;
@@ -30,9 +30,23 @@ exports.createProduct = async (req, res) => {
         const markup = Number(markupPercentage) || 0;
 
         // Calculate Final Prices
-        const totalCost = totalPlantsCost + pot + soil + labor;
-        const profitAmount = totalCost * (markup / 100);
-        const sellingPrice = totalCost + profitAmount;
+        let finalTotalCost = 0;
+        let finalSellingPrice = 0;
+
+        const baseCostForSinglePlant = Number(costPrice) || Number(req.body.totalCost) || 0;
+
+        if (type === 'Single Plant' && totalPlantsCost === 0 && pot === 0 && soil === 0 && labor === 0) {
+            finalTotalCost = baseCostForSinglePlant;
+            finalSellingPrice = Number(sellingPrice) || 0;
+        } else {
+            let baseCost = totalPlantsCost;
+            if (totalPlantsCost === 0 && type === 'Single Plant') {
+                baseCost = baseCostForSinglePlant;
+            }
+            finalTotalCost = baseCost + pot + soil + labor;
+            const profitAmount = finalTotalCost * (markup / 100);
+            finalSellingPrice = finalTotalCost + profitAmount;
+        }
 
         // Assemble the final verified product
         const newProduct = new Product({
@@ -43,8 +57,8 @@ exports.createProduct = async (req, res) => {
             soilCost: soil,
             laborCost: labor,
             markupPercentage: markup,
-            totalCost,
-            sellingPrice,
+            totalCost: finalTotalCost,
+            sellingPrice: finalSellingPrice,
             stockQuantity: Number(stockQuantity) || 0,
             imageUrl
         });
@@ -85,14 +99,14 @@ exports.updateProduct = async (req, res) => {
     try {
         const { name, type, plants, potCost, soilCost, laborCost, markupPercentage, stockQuantity, imageUrl, costPrice, sellingPrice, totalCost } = req.body;
 
-        
+
         const sanitizedPlants = Array.isArray(plants) ? plants.map(plant => ({
             name: plant.name || 'Unnamed Plant',
-            cost: Number(plant.cost) || 0 
+            cost: Number(plant.cost) || 0
         })) : [];
 
         const totalPlantsCost = sanitizedPlants.reduce((sum, plant) => sum + plant.cost, 0);
-        
+
         const pot = Number(potCost) || 0;
         const soil = Number(soilCost) || 0;
         const labor = Number(laborCost) || 0;
@@ -100,20 +114,26 @@ exports.updateProduct = async (req, res) => {
 
         let finalTotalCost = 0;
         let finalSellingPrice = 0;
-        
+
         // for the add product and calculator computation
-        if (sanitizedPlants.length > 0 || pot > 0 || soil > 0) {
-            finalTotalCost = totalPlantsCost + pot + soil + labor;
-            finalSellingPrice = finalTotalCost + (finalTotalCost * (markup / 100));
-        } else {
-            finalTotalCost = Number(totalCost) || Number(costPrice) || 0;
+        const baseCostForSinglePlant = Number(costPrice) || Number(totalCost) || 0;
+
+        if (type === 'Single Plant' && totalPlantsCost === 0 && pot === 0 && soil === 0 && labor === 0) {
+            finalTotalCost = baseCostForSinglePlant;
             finalSellingPrice = Number(sellingPrice) || 0;
+        } else {
+            let baseCost = totalPlantsCost;
+            if (totalPlantsCost === 0 && type === 'Single Plant') {
+                baseCost = baseCostForSinglePlant;
+            }
+            finalTotalCost = baseCost + pot + soil + labor;
+            finalSellingPrice = finalTotalCost + (finalTotalCost * (markup / 100));
         }
 
         const updateData = {
-            name: name || 'Unnamed Item', 
+            name: name || 'Unnamed Item',
             type: type || 'Arrangement',
-            plants: sanitizedPlants, 
+            plants: sanitizedPlants,
             potCost: pot,
             soilCost: soil,
             laborCost: labor,
