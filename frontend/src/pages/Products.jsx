@@ -150,7 +150,15 @@ const Products = () => {
                                 </ul>
                             </div>
                         )}
-                        
+                        {/* New fix for the based price and selling price */}
+                        <div style={{ marginTop: '10px', textAlign: 'left' }}>
+                            <p style={{ margin: 0, fontSize: '0.9em', color: '#555' }}>
+                                <strong>Cost:</strong> ₱{product.totalCost?.toFixed(2)}
+                            </p>
+                            <p style={{ margin: '5px 0 0 0', fontSize: '1.1em', color: '#2d6a4f', fontWeight: 'bold' }}>
+                                <strong>Price:</strong> ₱{product.sellingPrice?.toFixed(2)}
+                            </p>
+                        </div>
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
                         
                         <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>

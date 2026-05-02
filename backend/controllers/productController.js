@@ -60,14 +60,14 @@ exports.createProduct = async (req, res) => {
 };
 
 // Update product
-exports.updateProduct = async (req, res) => {
-    try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedProduct);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
+// exports.updateProduct = async (req, res) => {
+//     try {
+//         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         res.json(updatedProduct);
+//     } catch (error) {
+//         res.status(400).json({ message: error.message });
+//     }
+// };
 
 // Delete a product
 exports.deleteProduct = async (req, res) => {

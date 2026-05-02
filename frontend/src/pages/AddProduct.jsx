@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { addProduct } from '../services/api'; 
 
 const AddProduct = () => {
-    // 1. Added missing state to track form inputs
+    
     const [formData, setFormData] = useState({
         name: '', 
         type: 'Single Plant', 
@@ -26,7 +26,7 @@ const AddProduct = () => {
             return;
         }
 
-        // 2. The payload logic lives ONLY here
+        
         const payload = {
             ...formData,
             totalCost: Number(formData.costPrice) || 0,
