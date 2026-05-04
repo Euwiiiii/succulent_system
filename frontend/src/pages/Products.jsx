@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, deleteProduct, updateProduct, getSupplies, quickSellProduct } from '../services/api';
+import { getProducts, deleteProduct, updateProduct, getSupplies, quickSellProduct, createRequest } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
 
 const Products = () => {
@@ -9,6 +10,37 @@ const Products = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [editTotalCost, setEditTotalCost] = useState(0);
     const [editSellingPrice, setEditSellingPrice] = useState(0);
+
+    const { user } = React.useContext(AuthContext);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('All');
+
+    const filteredProducts = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'All' || p.type === filterType;
+        return matchesSearch && matchesType;
+    });
+
+    const handleRequest = async (product) => {
+        if (!user) {
+            alert('Please login to send a request.');
+            return;
+        }
+        const message = window.prompt(`What is your request/inquiry for ${product.name}?`);
+        if (!message) return;
+
+        try {
+            await createRequest({
+                customerUsername: user.username,
+                productID: product._id,
+                productName: product.name,
+                message
+            });
+            alert('✅ Request sent successfully! The seller will review it soon.');
+        } catch (error) {
+            alert('❌ Failed to send request.');
+        }
+    };
 
     useEffect(() => {
         fetchProducts();
@@ -153,32 +185,55 @@ const Products = () => {
 
     return (
         <div style={{ padding: '20px'}}>
-            <h2 style={{ padding: '20px', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ padding: '20px 0', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="Search items..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px' }}
+                    />
+                    <select 
+                        value={filterType} 
+                        onChange={(e) => setFilterType(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                    >
+                        <option value="All">All Types</option>
+                        <option value="Single Plant">Single Plant</option>
+                        <option value="Arrangement">Arrangement</option>
+                    </select>
+                </div>
+            </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                {products.length === 0 ? <p>No succulents in inventory yet!</p> : null}
+                {filteredProducts.length === 0 ? <p>No succulents match your search.</p> : null}
                 
-                {Array.isArray(products) && products.map((product) => (
+                {filteredProducts.map((product) => (
                     <div key={product._id} style={{ border: '1px solid #ccc', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '8px', backgroundColor: '#fdfdfd', position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
-                        <button 
-                            onClick={() => setEditingProduct({
-                                    ...product,
-                                    plants: product.plants || [],
-                                    supplies: product.supplies || [],
-                                    pot: product.pot || null,
-                                    potCost: product.potCost || 0,
-                                    laborCost: product.laborCost || 0,
-                                    markupPercentage: product.markupPercentage || 0
-                                })}
-                            style={iconBtnStyle}
-                        >
-                            <img src="/svg/edit.svg" style={{ width: '18px', height: '18px' }} />
-                        </button>
-                        <button onClick={() => handleDelete(product._id, product.name)} style={{...iconBtnStyle, background: '#ff4d4f'}}>
-                            <img src="/svg/delete.svg" style={{ width: '18px', height: '18px' }} />
-                        </button>
-                        </div>
+                        
+                        {user?.role === 'Admin' && (
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
+                                <button 
+                                    onClick={() => setEditingProduct({
+                                            ...product,
+                                            plants: product.plants || [],
+                                            supplies: product.supplies || [],
+                                            pot: product.pot || null,
+                                            potCost: product.potCost || 0,
+                                            laborCost: product.laborCost || 0,
+                                            markupPercentage: product.markupPercentage || 0
+                                        })}
+                                    style={iconBtnStyle}
+                                >
+                                    <img src="/svg/edit.svg" style={{ width: '18px', height: '18px' }} />
+                                </button>
+                                <button onClick={() => handleDelete(product._id, product.name)} style={{...iconBtnStyle, background: '#ff4d4f'}}>
+                                    <img src="/svg/delete.svg" style={{ width: '18px', height: '18px' }} />
+                                </button>
+                            </div>
+                        )}
                         
                         <h3 style={{ margin: '0 0 5px 0', color: '#1b4332', textAlign: 'left' }}>{product.name}</h3>
                         <p style={{ fontStyle: 'italic', color: 'gray', marginTop: '0', fontSize: '0.9em' }}>{product.type}</p>
@@ -211,18 +266,31 @@ const Products = () => {
                                 Stock: {product.stockQuantity} 
                                 {product.stockQuantity < 2 && " Low!"}
                             </p>
-                            <button 
-                                onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
-                                disabled={product.stockQuantity <= 0}
-                                style={{
-                                    ...quickSellBtnStyle,
-                                    opacity: product.stockQuantity <= 0 ? 0.5 : 1,
-                                    cursor: product.stockQuantity <= 0 ? 'not-allowed' : 'pointer'
-                                }}
-                                title="Quick Sell 1 Unit"
-                            >
-                                <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
-                            </button>
+                            
+                            {user?.role === 'Admin' ? (
+                                <button 
+                                    onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
+                                    disabled={product.stockQuantity <= 0}
+                                    style={{
+                                        ...quickSellBtnStyle,
+                                        opacity: product.stockQuantity <= 0 ? 0.5 : 1,
+                                        cursor: product.stockQuantity <= 0 ? 'not-allowed' : 'pointer'
+                                    }}
+                                    title="Quick Sell 1 Unit"
+                                >
+                                    <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => handleRequest(product)}
+                                    style={{
+                                        ...quickSellBtnStyle,
+                                        background: '#17a2b8'
+                                    }}
+                                >
+                                    💬 Request
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

@@ -164,7 +164,28 @@ exports.updateProduct = async (req, res) => {
             imageUrl: imageUrl || ''
         };
 
-        const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+        const priceHistoryUpdates = [];
+        if (calculatedPrices.sellingPrice !== existingProduct.sellingPrice) {
+            priceHistoryUpdates.push({
+                price: calculatedPrices.sellingPrice,
+                type: 'Selling Price',
+                changedBy: req.headers['x-user-role'] || 'Admin'
+            });
+        }
+        if (calculatedPrices.totalCost !== existingProduct.totalCost) {
+            priceHistoryUpdates.push({
+                price: calculatedPrices.totalCost,
+                type: 'Cost Price',
+                changedBy: req.headers['x-user-role'] || 'Admin'
+            });
+        }
+
+        const updateQuery = { $set: updateData };
+        if (priceHistoryUpdates.length > 0) {
+            updateQuery.$push = { priceHistory: { $each: priceHistoryUpdates } };
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(productId, updateQuery, { new: true });
 
         // --- MRP & SALES TRACKING EXECUTION ---
         if (delta > 0) {

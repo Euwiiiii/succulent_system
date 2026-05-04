@@ -41,7 +41,15 @@ const productSchema = new mongoose.Schema({
     
     // Inventory
     stockQuantity: { type: Number, required: true, min: 0 },
-    imageUrl: { type: String }
+    imageUrl: { type: String },
+    
+    // History
+    priceHistory: [{
+        price: Number,
+        type: { type: String, enum: ['Selling Price', 'Cost Price'] },
+        date: { type: Date, default: Date.now },
+        changedBy: { type: String, default: 'Admin' }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

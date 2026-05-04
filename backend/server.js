@@ -7,6 +7,8 @@ const cors = require('cors');
 const productRoutes = require('./routes/productRoutes');
 const supplyRoutes = require('./routes/supplyRoutes');
 const saleRoutes = require('./routes/saleRoutes');
+const authRoutes = require('./routes/authRoutes');
+const requestRoutes = require('./routes/requestRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +30,8 @@ mongoose.connect(dbURI)
 app.use('/api/products', productRoutes);
 app.use('/api/supplies', supplyRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/requests', requestRoutes);
 
 
 app.use(express.static(path.join(__dirname, 'dist')));
