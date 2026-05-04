@@ -183,9 +183,12 @@ exports.updateProduct = async (req, res) => {
             // Sale: Track it, do NOT restock supplies
             const qtySold = Math.abs(delta);
             const sale = new Sale({
+                productID: updatedProduct._id,
                 productName: updatedProduct.name,
                 quantitySold: qtySold,
-                totalRevenue: updatedProduct.sellingPrice * qtySold
+                totalRevenue: updatedProduct.sellingPrice * qtySold,
+                unitSellingPrice: updatedProduct.sellingPrice,
+                unitCostPrice: updatedProduct.totalCost
             });
             await sale.save();
         }
@@ -196,5 +199,41 @@ exports.updateProduct = async (req, res) => {
     } catch (error) {
         console.error("UPDATE PRODUCT ERROR:", error);
         res.status(400).json({ message: error.message });
+    }
+};
+
+// Quick Sell a product
+exports.quickSellProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId);
+        
+        if (!product) {
+            return res.status(404).json({ message: "Product not found." });
+        }
+        
+        if (product.stockQuantity <= 0) {
+            return res.status(400).json({ message: "Out of stock." });
+        }
+
+        // Deduct exactly 1 from product stock ONLY
+        product.stockQuantity -= 1;
+        const updatedProduct = await product.save();
+
+        // Log the transaction in the Sales collection
+        const sale = new Sale({
+            productID: updatedProduct._id,
+            productName: updatedProduct.name,
+            quantitySold: 1,
+            totalRevenue: updatedProduct.sellingPrice,
+            unitSellingPrice: updatedProduct.sellingPrice,
+            unitCostPrice: updatedProduct.totalCost
+        });
+        await sale.save();
+
+        res.json({ message: "Sale successful", product: updatedProduct });
+    } catch (error) {
+        console.error("QUICK SELL ERROR:", error);
+        res.status(500).json({ message: error.message });
     }
 };

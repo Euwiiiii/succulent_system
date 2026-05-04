@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, deleteProduct, updateProduct, getSupplies } from '../services/api';
+import { getProducts, deleteProduct, updateProduct, getSupplies, quickSellProduct } from '../services/api';
 import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
 
 const Products = () => {
@@ -54,6 +54,21 @@ const Products = () => {
 
     const handleEditChange = (e) => {
         setEditingProduct({ ...editingProduct, [e.target.name]: e.target.value });
+    };
+
+    const handleQuickSell = async (id, name, currentStock) => {
+        if (currentStock <= 0) return;
+        try {
+            await quickSellProduct(id);
+            // Show toast/alert
+            alert(`✅ Sold 1 unit of "${name}"!`);
+            // Update local state to reflect stock deduction immediately without full refetch
+            setProducts(products.map(p => p._id === id ? { ...p, stockQuantity: p.stockQuantity - 1 } : p));
+        } catch (error) {
+            console.error("Error quick selling", error);
+            const msg = error.response?.data?.message || "Failed to process sale.";
+            alert(`❌ ${msg}`);
+        }
     };
 
     // Plant Handlers
@@ -191,10 +206,24 @@ const Products = () => {
                         </div>
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
                         
-                        <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>
-                            Stock: {product.stockQuantity} 
-                            {product.stockQuantity < 2 && " Low!"}
-                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>
+                                Stock: {product.stockQuantity} 
+                                {product.stockQuantity < 2 && " Low!"}
+                            </p>
+                            <button 
+                                onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
+                                disabled={product.stockQuantity <= 0}
+                                style={{
+                                    ...quickSellBtnStyle,
+                                    opacity: product.stockQuantity <= 0 ? 0.5 : 1,
+                                    cursor: product.stockQuantity <= 0 ? 'not-allowed' : 'pointer'
+                                }}
+                                title="Quick Sell 1 Unit"
+                            >
+                                <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -368,5 +397,6 @@ const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color:
 const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
 const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
+const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
 
 export default Products;
