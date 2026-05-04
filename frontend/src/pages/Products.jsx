@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, deleteProduct, updateProduct, getSupplies } from '../services/api';
-import { calculateFinalPrices } from '../utils/calculator';
+import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
@@ -101,20 +101,18 @@ const Products = () => {
     useEffect(() => {
         if (editingProduct) {
             const prices = calculateFinalPrices({
-                type: editingProduct.type,
-                costPrice: editingProduct.costPrice || editingProduct.totalCost, // Fallback for legacy items
-                sellingPrice: editingProduct.sellingPrice,
-                plants: editingProduct.plants || [],
-                pot: editingProduct.pot || null,
-                potCost: editingProduct.potCost || 0,
-                supplies: editingProduct.supplies || [],
-                laborCost: editingProduct.laborCost || 0,
-                markupPercentage: editingProduct.markupPercentage || 0
+                ...editingProduct,
+                // Make sure to parse numeric inputs correctly if they are empty strings
+                costPrice: Number(editingProduct.costPrice) || Number(editingProduct.totalCost) || 0,
+                sellingPrice: Number(editingProduct.sellingPrice) || 0,
+                laborCost: Number(editingProduct.laborCost) || 0,
+                markupPercentage: Number(editingProduct.markupPercentage) || 0
             });
             setEditTotalCost(prices.totalCost);
             setEditSellingPrice(prices.sellingPrice);
         }
     }, [editingProduct]);
+
 
     const handleSaveEdit = async () => {
         try {
@@ -133,7 +131,8 @@ const Products = () => {
             fetchProducts(); 
         } catch (error) {
             console.error("Error updating", error);
-            alert("❌ Failed to update product.");
+            const msg = error.response?.data?.message || "Failed to update product.";
+            alert(`❌ ${msg}`);
         }
     };
 
@@ -184,10 +183,10 @@ const Products = () => {
                         
                         <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                                <strong>Cost Price:</strong> ₱{Number(product.totalCost || 0).toFixed(2)}
+                                <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
                             </p>
                             <p style={{ margin: '5px 0', color: '#2d6a4f', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                                <strong>Selling Price:</strong> ₱{Number(product.sellingPrice || 0).toFixed(2)}
+                                <strong>Selling Price:</strong> {formatCurrency(product.sellingPrice, true)}
                             </p>
                         </div>
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
@@ -284,7 +283,7 @@ const Products = () => {
                                         >
                                             <option value="">Select Pot...</option>
                                             {suppliesData.filter(s => s.type === 'Pot').map(s => (
-                                                <option key={s._id} value={s._id}>{s.name} (₱{Number(s.unitCost || 0).toFixed(2)})</option>
+                                                <option key={s._id} value={s._id}>{s.name} ({formatCurrency(s.unitCost)})</option>
                                             ))}
                                         </select>
                                     </div>
@@ -312,14 +311,31 @@ const Products = () => {
                         </div>
 
                         {/* Live Recalculation Display */}
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
-                            <div style={{ flex: 1, textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#555' }}>Live Total Cost</span><br/>
-                                <strong>₱{editTotalCost.toFixed(2)}</strong>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
+                            {/* Per Unit Breakdown */}
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1' }}>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
                             </div>
-                            <div style={{ flex: 1, textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Live Selling Price</span><br/>
-                                <strong style={{ color: '#2d6a4f' }}>₱{editSellingPrice.toFixed(2)}</strong>
+                            <div style={{ textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#555' }}>Unit Cost</span><br/>
+                                <strong>{formatCurrency(editTotalCost)}</strong>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Unit Selling Price</span><br/>
+                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice, true)}</strong>
+                            </div>
+
+                            {/* Overall Inventory Value */}
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', marginTop: '10px', borderTop: '1px dashed #ccc', paddingTop: '10px' }}>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#555' }}>Total Cost ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <strong>{formatCurrency(editTotalCost * (Number(editingProduct?.stockQuantity) || 0))}</strong>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
                             </div>
                         </div>
 

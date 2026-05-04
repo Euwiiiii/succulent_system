@@ -65,4 +65,29 @@ const calculateFinalPrices = ({
     };
 };
 
-module.exports = { calculateFinalPrices };
+/**
+ * Formats a number to Philippine Peso (PHP) currency with commas.
+ * @param {Number} amount - The numeric amount
+ * @param {Boolean} isSellingPrice - If true, rounds to nearest whole number. If false, shows 2 decimal places.
+ * @returns {String} Formatted currency string
+ */
+const formatCurrency = (amount, isSellingPrice = false) => {
+    const num = Number(amount) || 0;
+    if (isSellingPrice) {
+        return new Intl.NumberFormat('en-PH', { 
+            style: 'currency', 
+            currency: 'PHP', 
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: 0 
+        }).format(Math.round(num));
+    } else {
+        return new Intl.NumberFormat('en-PH', { 
+            style: 'currency', 
+            currency: 'PHP', 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2 
+        }).format(num);
+    }
+};
+
+module.exports = { calculateFinalPrices, formatCurrency };

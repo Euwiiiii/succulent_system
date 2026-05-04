@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import SmartCalculator from './pages/SmartCalculator';
 import Supplies from './pages/Supplies';
 import Products from './pages/Products';
+import Sales from './pages/Sales';
 
 function App() {
   return (
@@ -42,6 +43,9 @@ function App() {
           <Link to="/supplies" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
              Supplies
           </Link>
+          <Link to="/sales" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+             Sales Tracker
+          </Link>
         </nav>
 
   
@@ -49,6 +53,7 @@ function App() {
             <Route path="/" element={<Products />} />
             <Route path="/calculator" element={<SmartCalculator />} /> 
             <Route path="/supplies" element={<Supplies />} />
+            <Route path="/sales" element={<Sales />} />
           </Routes>
 
           </div>

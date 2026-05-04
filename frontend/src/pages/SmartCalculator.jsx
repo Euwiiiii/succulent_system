@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { addProduct, getSupplies } from '../services/api';
-import { calculateFinalPrices } from '../utils/calculator';
+import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
 
 const SmartCalculator = () => {
     const [productType, setProductType] = useState('Single Plant'); // 'Single Plant' or 'Arrangement'
@@ -124,7 +124,8 @@ const SmartCalculator = () => {
             setLaborCost('');
         } catch (error) {
             console.error(error);
-            alert("❌ Error saving to database.");
+            const msg = error.response?.data?.message || "Error saving to database.";
+            alert(`❌ ${msg}`);
         }
     };
 
@@ -196,7 +197,7 @@ const SmartCalculator = () => {
                                         >
                                             <option value="">Select Pot...</option>
                                             {suppliesData.filter(s => s.type === 'Pot').map(s => (
-                                                <option key={s._id} value={s._id}>{s.name} (₱{Number(s.unitCost || 0).toFixed(2)})</option>
+                                                <option key={s._id} value={s._id}>{s.name} ({formatCurrency(s.unitCost)})</option>
                                             ))}
                                         </select>
                                     </div>
@@ -210,7 +211,7 @@ const SmartCalculator = () => {
                                             >
                                                 <option value="">Select Supply...</option>
                                                 {suppliesData.filter(s => s.type !== 'Pot').map(s => (
-                                                    <option key={s._id} value={s._id}>{s.name} (₱{Number(s.unitCost || 0).toFixed(2)}/unit)</option>
+                                                    <option key={s._id} value={s._id}>{s.name} ({formatCurrency(s.unitCost)}/unit)</option>
                                                 ))}
                                             </select>
                                             <input type="number" value={item.gramsUsed} onChange={(e) => handleSupplyGrams(index, e.target.value)} placeholder="Qty/Grams" style={{ ...inputStyle, flex: 1 }} />
@@ -241,14 +242,14 @@ const SmartCalculator = () => {
                     
                     <div style={{ ...resultRow, fontSize: '1.1rem', color: '#555' }}>
                         <span>Total Cost:</span>
-                        <strong>₱{liveTotalCost.toFixed(2)}</strong>
+                        <strong>{formatCurrency(liveTotalCost)}</strong>
                     </div>
                     
                     <hr style={{ opacity: 0.2, margin: '20px 0', borderColor: '#2d6a4f' }} />
                     
                     <div style={{ ...resultRow, fontSize: '1.4rem', fontWeight: 'bold', color: '#2d6a4f' }}>
                         <span>Selling Price:</span>
-                        <span>₱{liveSellingPrice.toFixed(2)}</span>
+                        <span>{formatCurrency(liveSellingPrice, true)}</span>
                     </div>
                     
                     <button onClick={handleSaveToInventory} style={saveButtonStyle}>
