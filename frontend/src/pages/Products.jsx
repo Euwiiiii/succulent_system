@@ -1,32 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, deleteProduct, updateProduct} from '../services/api'; 
+import { getProducts, deleteProduct, updateProduct, getSupplies } from '../services/api';
+import { calculateFinalPrices } from '../utils/calculator';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
+    const [suppliesData, setSuppliesData] = useState([]);
+    
     const [editingProduct, setEditingProduct] = useState(null);
     const [editTotalCost, setEditTotalCost] = useState(0);
     const [editSellingPrice, setEditSellingPrice] = useState(0);
 
-
     useEffect(() => {
         fetchProducts();
+        fetchSupplies();
     }, []);
 
     const fetchProducts = async () => {
-    try {
-        const response = await getProducts();
-        // Siguraduhin na array ang data bago i-set
-        if (response.data && Array.isArray(response.data)) {
-            setProducts(response.data);
-        } else {
-            console.warn("Backend did not return an array:", response.data);
-            setProducts([]); // Ibalik sa empty array kung hindi listahan
+        try {
+            const response = await getProducts();
+            if (response.data && Array.isArray(response.data)) {
+                setProducts(response.data);
+            } else {
+                setProducts([]); 
+            }
+        } catch (error) {
+            console.error("Error fetching products", error);
+            setProducts([]);
         }
-    } catch (error) {
-        console.error("Error fetching products", error);
-        setProducts([]); // Ibalik sa empty array kapag may error
-    }
-};
+    };
+
+    const fetchSupplies = async () => {
+        try {
+            const { data } = await getSupplies();
+            setSuppliesData(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error fetching supplies", error);
+        }
+    };
 
     const handleDelete = async (id, name) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete "${name}"?`);
@@ -41,15 +51,18 @@ const Products = () => {
             alert("Failed to delete product.");
         }
     };
-    const handleEditChange = (e) => {
-            setEditingProduct({ ...editingProduct, [e.target.name]: e.target.value });
-        };
 
+    const handleEditChange = (e) => {
+        setEditingProduct({ ...editingProduct, [e.target.name]: e.target.value });
+    };
+
+    // Plant Handlers
     const handleEditPlantChange = (index, field, value) => {
         const updatedPlants = [...(editingProduct.plants || [])];
         updatedPlants[index] = { ...updatedPlants[index], [field]: value };
         setEditingProduct({ ...editingProduct, plants: updatedPlants });
     };
+
     const removeEditPlantRow = (index) => {
         const updatedPlants = editingProduct.plants.filter((_, i) => i !== index);
         setEditingProduct({ ...editingProduct, plants: updatedPlants });
@@ -60,32 +73,61 @@ const Products = () => {
         setEditingProduct({ ...editingProduct, plants: updatedPlants });
     };
 
+    // Supplies Handlers
+    const addEditSupplyRow = () => {
+        const updatedSupplies = [...(editingProduct.supplies || []), { supply: null, gramsUsed: '' }];
+        setEditingProduct({ ...editingProduct, supplies: updatedSupplies });
+    };
+
+    const handleEditSupplySelection = (index, supplyId) => {
+        const supply = suppliesData.find(s => s._id === supplyId);
+        const newSupplies = [...(editingProduct.supplies || [])];
+        newSupplies[index].supply = supply;
+        setEditingProduct({ ...editingProduct, supplies: newSupplies });
+    };
+
+    const handleEditSupplyGrams = (index, grams) => {
+        const newSupplies = [...(editingProduct.supplies || [])];
+        newSupplies[index].gramsUsed = grams;
+        setEditingProduct({ ...editingProduct, supplies: newSupplies });
+    };
+
+    const removeEditSupplyRow = (index) => {
+        const newSupplies = editingProduct.supplies.filter((_, i) => i !== index);
+        setEditingProduct({ ...editingProduct, supplies: newSupplies });
+    };
+
+    // Live Calculation
     useEffect(() => {
         if (editingProduct) {
-            const plantsCost = (editingProduct.plants || []).reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
-            const pot = Number(editingProduct.potCost) || 0;
-            const soil = Number(editingProduct.soilCost) || 0;
-            const labor = Number(editingProduct.laborCost) || 0;
-            const markup = Number(editingProduct.markupPercentage) || 0;
-            
-            if (editingProduct.type === 'Single Plant' && plantsCost === 0 && pot === 0 && soil === 0 && labor === 0) {
-                setEditTotalCost(Number(editingProduct.costPrice || editingProduct.totalCost) || 0);
-                setEditSellingPrice(Number(editingProduct.sellingPrice) || 0);
-            } else {
-                let baseCost = plantsCost;
-                if (plantsCost === 0 && editingProduct.type === 'Single Plant') {
-                    baseCost = Number(editingProduct.costPrice || editingProduct.totalCost) || 0;
-                }
-                const total = baseCost + pot + soil + labor;
-                setEditTotalCost(total);
-                setEditSellingPrice(total + (total * (markup / 100)));
-            }
+            const prices = calculateFinalPrices({
+                type: editingProduct.type,
+                costPrice: editingProduct.costPrice || editingProduct.totalCost, // Fallback for legacy items
+                sellingPrice: editingProduct.sellingPrice,
+                plants: editingProduct.plants || [],
+                pot: editingProduct.pot || null,
+                potCost: editingProduct.potCost || 0,
+                supplies: editingProduct.supplies || [],
+                laborCost: editingProduct.laborCost || 0,
+                markupPercentage: editingProduct.markupPercentage || 0
+            });
+            setEditTotalCost(prices.totalCost);
+            setEditSellingPrice(prices.sellingPrice);
         }
     }, [editingProduct]);
 
     const handleSaveEdit = async () => {
         try {
-            await updateProduct(editingProduct._id, editingProduct);
+            // Clean up populated supply objects to just IDs before sending
+            const payload = {
+                ...editingProduct,
+                pot: editingProduct.pot?._id || editingProduct.pot,
+                supplies: (editingProduct.supplies || []).map(s => ({
+                    supply: s.supply?._id || s.supply,
+                    gramsUsed: s.gramsUsed
+                }))
+            };
+            await updateProduct(editingProduct._id, payload);
             alert(`✅ "${editingProduct.name}" updated successfully!`);
             setEditingProduct(null); 
             fetchProducts(); 
@@ -99,66 +141,34 @@ const Products = () => {
         <div style={{ padding: '20px'}}>
             <h2 style={{ padding: '20px', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
             
-            {/* display products in a grid layout with 3 columns*/}
-        
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                
                 {products.length === 0 ? <p>No succulents in inventory yet!</p> : null}
                 
                 {Array.isArray(products) && products.map((product) => (
                     <div key={product._id} style={{ border: '1px solid #ccc', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '8px', backgroundColor: '#fdfdfd', position: 'relative' }}>
                         <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
-                            {/* Edit Button */}
                         <button 
                             onClick={() => setEditingProduct({
                                     ...product,
                                     plants: product.plants || [],
+                                    supplies: product.supplies || [],
+                                    pot: product.pot || null,
                                     potCost: product.potCost || 0,
-                                    soilCost: product.soilCost || 0,
                                     laborCost: product.laborCost || 0,
                                     markupPercentage: product.markupPercentage || 0
                                 })}
-                            style={{ 
-                                background: '#2d6a4f', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                cursor: 'pointer', 
-                                padding: '6px', 
-                                display: 'flex', 
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
+                            style={iconBtnStyle}
                         >
-                            <img 
-                                src="/svg/edit.svg" 
-                                style={{ width: '18px', height: '18px' }} 
-                            />
+                            <img src="/svg/edit.svg" style={{ width: '18px', height: '18px' }} />
                         </button>
-                            <button 
-                            onClick={() => handleDelete(product._id, product.name)}
-                            style={{
-                                background: '#ff4d4f', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                cursor: 'pointer', 
-                                padding: '6px', 
-                                display: 'flex', 
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <img 
-                                src="/svg/delete.svg" 
-                                style={{ width: '18px', height: '18px' }} 
-                            />
+                        <button onClick={() => handleDelete(product._id, product.name)} style={{...iconBtnStyle, background: '#ff4d4f'}}>
+                            <img src="/svg/delete.svg" style={{ width: '18px', height: '18px' }} />
                         </button>
                         </div>
                         
-
                         <h3 style={{ margin: '0 0 5px 0', color: '#1b4332', textAlign: 'left' }}>{product.name}</h3>
                         <p style={{ fontStyle: 'italic', color: 'gray', marginTop: '0', fontSize: '0.9em' }}>{product.type}</p>
                         
-                        {/* The Image Tag */}
                         {product.imageUrl && <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '5px' }} />}
                         
                         {product.plants && product.plants.length > 0 && (
@@ -171,7 +181,7 @@ const Products = () => {
                                 </ul>
                             </div>
                         )}
-                        {/* New fix for the based price and selling price */}
+                        
                         <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
                                 <strong>Cost Price:</strong> ₱{Number(product.totalCost || 0).toFixed(2)}
@@ -189,7 +199,8 @@ const Products = () => {
                     </div>
                 ))}
             </div>
-                {editingProduct && (
+
+            {editingProduct && (
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
                         <h3 style={{ marginTop: 0, color: '#1b4332', textAlign: 'center' }}> Advanced Edit</h3>
@@ -201,53 +212,104 @@ const Products = () => {
                             </div>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Type</label>
-                                <input name="type" value={editingProduct?.type || ''} onChange={handleEditChange} style={inputStyle} />
+                                <select name="type" value={editingProduct?.type || 'Single Plant'} onChange={handleEditChange} style={inputStyle}>
+                                    <option value="Single Plant">Single Plant</option>
+                                    <option value="Arrangement">Arrangement</option>
+                                </select>
                             </div>
                         </div>
+
+                        {/* Cost Price for single plant edits directly */}
+                        {editingProduct?.type === 'Single Plant' && (
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <label style={labelStyle}>Base Cost (₱)</label>
+                                    <input name="costPrice" type="number" value={editingProduct?.costPrice || editingProduct?.totalCost || ''} onChange={handleEditChange} style={inputStyle} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={labelStyle}>Base Selling (₱)</label>
+                                    <input name="sellingPrice" type="number" value={editingProduct?.sellingPrice || ''} onChange={handleEditChange} style={inputStyle} />
+                                </div>
+                            </div>
+                        )}
 
                         {/* Plants List inside Modal */}
-                        <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px' }}>
-                            <label style={{...labelStyle, color: '#2d6a4f'}}>Plants & Costs</label>
-                            {(editingProduct?.plants || []).map((plant, index) => (
-                                <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                                    {/* Added plant?. safety net to prevent crashes! */}
-                                    <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{...inputStyle, flex: 2}} />
-                                    <input type="number" value={plant?.cost || ''} onChange={(e) => handleEditPlantChange(index, 'cost', e.target.value)} style={{...inputStyle, flex: 1}} placeholder="₱" />
-                                    <button onClick={() => removeEditPlantRow(index)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+                        {editingProduct?.type === 'Arrangement' && (
+                            <>
+                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Plants & Costs</label>
+                                    {(editingProduct?.plants || []).map((plant, index) => (
+                                        <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                            <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{...inputStyle, flex: 2}} />
+                                            <input type="number" value={plant?.cost || ''} onChange={(e) => handleEditPlantChange(index, 'cost', e.target.value)} style={{...inputStyle, flex: 1}} placeholder="₱" />
+                                            <button onClick={() => removeEditPlantRow(index)} style={deleteBtnStyle}>X</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={addEditPlantRow} style={addBtnStyle}>+ Add Plant</button>
                                 </div>
-                            ))}
-                            <button onClick={addEditPlantRow} style={{ marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc' }}>+ Add Plant</button>
-                        </div>
 
-                        {/* Supplies & Labor inside Modal */}
+                                {/* Supplies inside Modal */}
+                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Supplies</label>
+                                    {(editingProduct?.supplies || []).map((item, index) => (
+                                        <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                            <select 
+                                                value={item.supply?._id || item.supply || ''} 
+                                                onChange={(e) => handleEditSupplySelection(index, e.target.value)}
+                                                style={{...inputStyle, flex: 2}}
+                                            >
+                                                <option value="">Select...</option>
+                                                {suppliesData.filter(s => s.type !== 'Pot').map(s => (
+                                                    <option key={s._id} value={s._id}>{s.name}</option>
+                                                ))}
+                                            </select>
+                                            <input type="number" value={item.gramsUsed || ''} onChange={(e) => handleEditSupplyGrams(index, e.target.value)} style={{...inputStyle, flex: 1}} placeholder="g" />
+                                            <button onClick={() => removeEditSupplyRow(index)} style={deleteBtnStyle}>X</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={addEditSupplyRow} style={addBtnStyle}>+ Add Supply</button>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={labelStyle}>Pot</label>
+                                        <select 
+                                            name="pot" 
+                                            value={editingProduct?.pot?._id || editingProduct?.pot || ''} 
+                                            onChange={(e) => {
+                                                const selectedPot = suppliesData.find(s => s._id === e.target.value) || null;
+                                                setEditingProduct({ ...editingProduct, pot: selectedPot });
+                                            }} 
+                                            style={inputStyle}
+                                        >
+                                            <option value="">Select Pot...</option>
+                                            {suppliesData.filter(s => s.type === 'Pot').map(s => (
+                                                <option key={s._id} value={s._id}>{s.name} (₱{Number(s.unitCost || 0).toFixed(2)})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={labelStyle}>Labor (₱)</label>
+                                        <input name="laborCost" type="number" placeholder="Labor Cost" value={editingProduct?.laborCost || ''} onChange={handleEditChange} style={inputStyle} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={labelStyle}>Margin (%)</label>
+                                        <input name="markupPercentage" type="number" placeholder="Margin" value={editingProduct?.markupPercentage || ''} onChange={handleEditChange} style={inputStyle} />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={labelStyle}>Pot (₱)</label>
-                                <input name="potCost" type="number" placeholder="Enter Pot Cost (₱)" value={editingProduct?.potCost || ''} onChange={handleEditChange} style={inputStyle} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <label style={labelStyle}>Soil (₱)</label>
-                                <input name="soilCost" type="number" placeholder="Enter Soil Cost (₱)" value={editingProduct?.soilCost || ''} onChange={handleEditChange} style={inputStyle} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <label style={labelStyle}>Labor (₱)</label>
-                                <input name="laborCost" type="number" placeholder="Enter Labor Cost (₱)" value={editingProduct?.laborCost || ''} onChange={handleEditChange} style={inputStyle} />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={labelStyle}>Margin (%)</label>
-                                <input name="markupPercentage" type="number" placeholder="Markup %" value={editingProduct?.markupPercentage || ''} onChange={handleEditChange} style={inputStyle} />
-                            </div>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Stock</label>
                                 <input name="stockQuantity" type="number" value={editingProduct?.stockQuantity || ''} onChange={handleEditChange} style={inputStyle} />
                             </div>
+                            <div style={{ flex: 2 }}>
+                                <label style={labelStyle}>Image URL</label>
+                                <input name="imageUrl" value={editingProduct?.imageUrl || ''} onChange={handleEditChange} style={inputStyle} />
+                            </div>
                         </div>
-                        
-                        <label style={labelStyle}>Image URL</label>
-                        <input name="imageUrl" value={editingProduct?.imageUrl || ''} onChange={handleEditChange} style={inputStyle} />
 
                         {/* Live Recalculation Display */}
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
@@ -268,29 +330,27 @@ const Products = () => {
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
 
-// Modal 
+// Modal & UI Styles
 const overlayStyle = {
     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
     backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', justifyContent: 'center',
     alignItems: 'center', zIndex: 1000
 };
 const modalStyle = {
-    backgroundColor: 'white', padding: '30px', borderRadius: '10px',
-    width: '400px', display: 'flex', flexDirection: 'column', gap: '10px',
+    backgroundColor: 'white', padding: '25px', borderRadius: '10px',
+    width: '450px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
 };
 const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#555', marginBottom: '-5px' };
-const inputStyle = { padding: '10px', border: '1px solid #ccc', borderRadius: '5px', width: '100%', boxSizing: 'border-box' };
+const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '5px', width: '100%', boxSizing: 'border-box' };
 const saveBtnStyle = { flex: 1, padding: '10px', background: '#2d6a4f', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
 const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-        
-    
+const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
+const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
 
 export default Products;
-
-

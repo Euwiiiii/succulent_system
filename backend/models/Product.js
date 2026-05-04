@@ -26,8 +26,12 @@ const productSchema = new mongoose.Schema({
     
     // Advanced Costing Fields
     plants: [plantSchema], 
-    potCost: { type: Number, default: 0 },
-    soilCost: { type: Number, default: 0 },
+    pot: { type: mongoose.Schema.Types.ObjectId, ref: 'Supply' },
+    potCost: { type: Number, default: 0 }, // Kept for backwards compatibility
+    supplies: [{
+        supply: { type: mongoose.Schema.Types.ObjectId, ref: 'Supply' },
+        gramsUsed: { type: Number, default: 0 }
+    }],
     laborCost: { type: Number, default: 0 },
     markupPercentage: { type: Number, default: 50 },
     

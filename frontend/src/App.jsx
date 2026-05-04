@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import AddProduct from './pages/AddProduct';
-import CostingCalculator from './pages/CostingCalculator';
+import SmartCalculator from './pages/SmartCalculator';
+import Supplies from './pages/Supplies';
 import Products from './pages/Products';
 
 function App() {
@@ -31,59 +31,24 @@ function App() {
             /> Succulent System
             </h2>
           
-          <Link to="/" style={{ 
-            color: 'white', 
-            textDecoration: 'none', 
-            fontWeight: 'bold', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
-          }}>
-            <img 
-              src="/svg/inventory.svg" 
-              alt="Inventory" 
-              style={{ width: '20px', height: '20px' }} 
-            />
+          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src="/svg/inventory.svg" alt="Inventory" style={{ width: '20px', height: '20px' }} />
             Inventory
           </Link>
-          <Link to="/add" style={{ 
-            color: 'white', 
-            textDecoration: 'none', 
-            fontWeight: 'bold', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
-          }}>
-            <img 
-              src="/svg/add_packages.svg" 
-              alt="Add Product" 
-              style={{ width: '20px', height: '20px' }} 
-            />
-            Add Product
+          <Link to="/calculator" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src="/svg/calculator.svg.png" alt="Smart Calculator" style={{ width: '20px', height: '20px' }} />
+            Smart Calculator
           </Link>
-          <Link to="/calculator" style={{ 
-            color: 'white', 
-            textDecoration: 'none', 
-            fontWeight: 'bold', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
-          }}>
-            <img 
-              src="/svg/calculator.svg.png" 
-              alt="Calculator" 
-              style={{ width: '20px', height: '20px' }} 
-            />
-            Calculator
+          <Link to="/supplies" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+             Supplies
           </Link>
         </nav>
 
   
       <Routes>
-            
-            <Route path="/add" element={<AddProduct />} />
-            <Route path="/calculator" element={<CostingCalculator />} /> 
             <Route path="/" element={<Products />} />
+            <Route path="/calculator" element={<SmartCalculator />} /> 
+            <Route path="/supplies" element={<Supplies />} />
           </Routes>
 
           </div>

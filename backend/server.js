@@ -5,7 +5,7 @@ const path = require('path');
 const cors = require('cors');
 
 const productRoutes = require('./routes/productRoutes');
-
+const supplyRoutes = require('./routes/supplyRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +25,7 @@ mongoose.connect(dbURI)
 
 
 app.use('/api/products', productRoutes);
+app.use('/api/supplies', supplyRoutes);
 
 
 app.use(express.static(path.join(__dirname, 'dist')));
