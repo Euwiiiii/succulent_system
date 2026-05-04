@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Automatically detects if you are on localhost or Vercel
+// Automatically detects if on localhost or Vercel
 const isLocal = window.location.hostname === 'localhost';
 const API_URL = isLocal ? 'http://localhost:5000/api' : '/_backend/api';
 
