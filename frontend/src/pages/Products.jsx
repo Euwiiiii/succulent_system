@@ -23,23 +23,12 @@ const Products = () => {
 
     const handleRequest = async (product) => {
         if (!user) {
-            alert('Please login to send a request.');
+            alert('Please login to send a request/inquiry.');
             return;
         }
-        const message = window.prompt(`What is your request/inquiry for ${product.name}?`);
-        if (!message) return;
-
-        try {
-            await createRequest({
-                customerUsername: user.username,
-                productID: product._id,
-                productName: product.name,
-                message
-            });
-            alert('✅ Request sent successfully! The seller will review it soon.');
-        } catch (error) {
-            alert('❌ Failed to send request.');
-        }
+        window.dispatchEvent(new CustomEvent('open-chat', { 
+            detail: { productId: product._id, productName: product.name }
+        }));
     };
 
     useEffect(() => {

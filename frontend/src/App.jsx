@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
+import CustomerChatbox from './components/CustomerChatbox';
 
 const AppContent = () => {
   const { user, logout } = useContext(AuthContext);
@@ -72,6 +73,7 @@ const AppContent = () => {
         <Route path="/sales" element={user?.role === 'Admin' ? <Sales /> : <Products />} />
         <Route path="/dashboard" element={user?.role === 'Admin' ? <Dashboard /> : <Products />} />
       </Routes>
+      {user?.role === 'Customer' && <CustomerChatbox />}
     </div>
   );
 };
