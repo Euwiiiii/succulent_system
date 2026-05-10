@@ -182,12 +182,12 @@ const Products = () => {
                         placeholder="Search items..." 
                         value={searchTerm} 
                         onChange={(e) => setSearchTerm(e.target.value)} 
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px' }}
+                        style={{ padding: '10px 20px', borderRadius: '25px', border: '1px solid #0A3323', width: '200px', backgroundColor: '#F7F4D5', color: '#0A3323', outline: 'none' }}
                     />
                     <select 
                         value={filterType} 
                         onChange={(e) => setFilterType(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                        style={{ padding: '10px 20px', borderRadius: '25px', border: '1px solid #0A3323', backgroundColor: '#F7F4D5', color: '#0A3323', outline: 'none' }}
                     >
                         <option value="All">All Types</option>
                         <option value="Single Plant">Single Plant</option>
@@ -251,7 +251,7 @@ const Products = () => {
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
                         
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>
+                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? '#D3968C' : '#105666', fontWeight: 'bold' }}>
                                 Stock: {product.stockQuantity} 
                                 {product.stockQuantity < 2 && " Low!"}
                             </p>
@@ -454,6 +454,6 @@ const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color:
 const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
 const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
-const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
+const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#105666', color: '#F7F4D5', border: 'none', borderRadius: '20px', padding: '8px 16px', fontWeight: 'bold', transition: 'background 0.3s' };
 
 export default Products;
