@@ -464,7 +464,7 @@ const Products = ({ searchTerm = '' }) => {
                     </div>
                 </div>
             )}
-            {user?.role === 'Admin' && <button onClick={handleResetDB} style={resetBtnStyle}>Reset Database (Admin)</button>}
+            {/* Admin actions could go here */}
             
             <ContactRequestModal 
                 isOpen={isContactModalOpen} 

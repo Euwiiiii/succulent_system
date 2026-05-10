@@ -43,7 +43,7 @@ const Dashboard = () => {
                         <tbody>
                             {contactRequests.map((req, index) => (
                                 <tr key={req._id} style={{ borderBottom: '1px solid #eee', backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white' }}>
-                                    <td style={{ padding: '15px' }}>{new Date(req.createdAt).toLocaleDateString()}</td>
+                                    <td style={{ padding: '15px' }}>{req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A'}</td>
                                     <td style={{ padding: '15px', fontWeight: 'bold' }}>{req.firstName} {req.lastName}</td>
                                     <td style={{ padding: '15px' }}>
                                         <div>{req.email}</div>
