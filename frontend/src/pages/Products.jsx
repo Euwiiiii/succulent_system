@@ -3,22 +3,19 @@ import { getProducts, deleteProduct, updateProduct, getSupplies, quickSellProduc
 import { AuthContext } from '../context/AuthContext';
 import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
 
-const Products = () => {
+const Products = ({ searchTerm = '' }) => {
     const [products, setProducts] = useState([]);
     const [suppliesData, setSuppliesData] = useState([]);
-    
+
     const [editingProduct, setEditingProduct] = useState(null);
     const [editTotalCost, setEditTotalCost] = useState(0);
     const [editSellingPrice, setEditSellingPrice] = useState(0);
 
     const { user } = React.useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('All');
 
     const filteredProducts = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === 'All' || p.type === filterType;
-        return matchesSearch && matchesType;
+        const lowerSearch = searchTerm.toLowerCase();
+        return p.name.toLowerCase().includes(lowerSearch) || (p.type && p.type.toLowerCase().includes(lowerSearch));
     });
 
     const handleRequest = async (product) => {
@@ -26,7 +23,7 @@ const Products = () => {
             alert('Please login to send a request/inquiry.');
             return;
         }
-        window.dispatchEvent(new CustomEvent('open-chat', { 
+        window.dispatchEvent(new CustomEvent('open-chat', {
             detail: { productId: product._id, productName: product.name }
         }));
     };
@@ -42,7 +39,7 @@ const Products = () => {
             if (response.data && Array.isArray(response.data)) {
                 setProducts(response.data);
             } else {
-                setProducts([]); 
+                setProducts([]);
             }
         } catch (error) {
             console.error("Error fetching products", error);
@@ -65,7 +62,7 @@ const Products = () => {
 
         try {
             await deleteProduct(id);
-            setProducts(products.filter(product => product._id !== id)); 
+            setProducts(products.filter(product => product._id !== id));
             alert(`🗑️ "${name}" has been deleted.`);
         } catch (error) {
             console.error("Error deleting product", error);
@@ -163,8 +160,8 @@ const Products = () => {
             };
             await updateProduct(editingProduct._id, payload);
             alert(`✅ "${editingProduct.name}" updated successfully!`);
-            setEditingProduct(null); 
-            fetchProducts(); 
+            setEditingProduct(null);
+            fetchProducts();
         } catch (error) {
             console.error("Error updating", error);
             const msg = error.response?.data?.message || "Failed to update product.";
@@ -173,62 +170,42 @@ const Products = () => {
     };
 
     return (
-        <div style={{ padding: '20px'}}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ padding: '20px 0', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <input 
-                        type="text" 
-                        placeholder="Search items..." 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px' }}
-                    />
-                    <select 
-                        value={filterType} 
-                        onChange={(e) => setFilterType(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-                    >
-                        <option value="All">All Types</option>
-                        <option value="Single Plant">Single Plant</option>
-                        <option value="Arrangement">Arrangement</option>
-                    </select>
-                </div>
-            </div>
-            
+        <div style={{ padding: '20px' }}>
+            {/* Products List */}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 {filteredProducts.length === 0 ? <p>No succulents match your search.</p> : null}
-                
+
                 {filteredProducts.map((product) => (
                     <div key={product._id} style={{ border: '1px solid #ccc', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '8px', backgroundColor: '#fdfdfd', position: 'relative' }}>
-                        
+
                         {user?.role === 'Admin' && (
-                            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
-                                <button 
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} >
+                                <button
                                     onClick={() => setEditingProduct({
-                                            ...product,
-                                            plants: product.plants || [],
-                                            supplies: product.supplies || [],
-                                            pot: product.pot || null,
-                                            potCost: product.potCost || 0,
-                                            laborCost: product.laborCost || 0,
-                                            markupPercentage: product.markupPercentage || 0
-                                        })}
+                                        ...product,
+                                        plants: product.plants || [],
+                                        supplies: product.supplies || [],
+                                        pot: product.pot || null,
+                                        potCost: product.potCost || 0,
+                                        laborCost: product.laborCost || 0,
+                                        markupPercentage: product.markupPercentage || 0
+                                    })}
                                     style={iconBtnStyle}
                                 >
                                     <img src="/svg/edit.svg" style={{ width: '18px', height: '18px' }} />
                                 </button>
-                                <button onClick={() => handleDelete(product._id, product.name)} style={{...iconBtnStyle, background: '#ff4d4f'}}>
+                                <button onClick={() => handleDelete(product._id, product.name)} style={{ ...iconBtnStyle, background: '#ff4d4f' }}>
                                     <img src="/svg/delete.svg" style={{ width: '18px', height: '18px' }} />
                                 </button>
                             </div>
                         )}
-                        
+
                         <h3 style={{ margin: '0 0 5px 0', color: '#1b4332', textAlign: 'left' }}>{product.name}</h3>
                         <p style={{ fontStyle: 'italic', color: 'gray', marginTop: '0', fontSize: '0.9em' }}>{product.type}</p>
-                        
+
                         {product.imageUrl && <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '5px' }} />}
-                        
+
                         {product.plants && product.plants.length > 0 && (
                             <div style={{ margin: '15px 0', padding: '10px', backgroundColor: '#e9ecef', borderRadius: '5px', fontSize: '0.85em', textAlign: 'left' }}>
                                 <strong>Varieties:</strong>
@@ -239,7 +216,7 @@ const Products = () => {
                                 </ul>
                             </div>
                         )}
-                        
+
                         <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
                             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
                                 <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
@@ -249,19 +226,19 @@ const Products = () => {
                             </p>
                         </div>
                         <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
-                        
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>
-                                Stock: {product.stockQuantity} 
+                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? '#D3968C' : 'green', fontWeight: 'bold' }}>
+                                Stock: {product.stockQuantity}
                                 {product.stockQuantity < 2 && " Low!"}
                             </p>
-                            
+
                             {user?.role === 'Admin' ? (
-                                <button 
+                                <button
+                                    className="primary-btn"
                                     onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
                                     disabled={product.stockQuantity <= 0}
                                     style={{
-                                        ...quickSellBtnStyle,
                                         opacity: product.stockQuantity <= 0 ? 0.5 : 1,
                                         cursor: product.stockQuantity <= 0 ? 'not-allowed' : 'pointer'
                                     }}
@@ -270,12 +247,9 @@ const Products = () => {
                                     <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
                                 </button>
                             ) : (
-                                <button 
+                                <button
+                                    className="primary-btn"
                                     onClick={() => handleRequest(product)}
-                                    style={{
-                                        ...quickSellBtnStyle,
-                                        background: '#17a2b8'
-                                    }}
                                 >
                                     💬 Request
                                 </button>
@@ -289,7 +263,7 @@ const Products = () => {
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
                         <h3 style={{ marginTop: 0, color: '#1b4332', textAlign: 'center' }}> Advanced Edit</h3>
-                        
+
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <div style={{ flex: 2 }}>
                                 <label style={labelStyle}>Name</label>
@@ -322,11 +296,11 @@ const Products = () => {
                         {editingProduct?.type === 'Arrangement' && (
                             <>
                                 <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Plants & Costs</label>
+                                    <label style={{ ...labelStyle, color: '#2d6a4f' }}>Plants & Costs</label>
                                     {(editingProduct?.plants || []).map((plant, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                                            <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{...inputStyle, flex: 2}} />
-                                            <input type="number" value={plant?.cost || ''} onChange={(e) => handleEditPlantChange(index, 'cost', e.target.value)} style={{...inputStyle, flex: 1}} placeholder="₱" />
+                                            <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{ ...inputStyle, flex: 2 }} />
+                                            <input type="number" value={plant?.cost || ''} onChange={(e) => handleEditPlantChange(index, 'cost', e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="₱" />
                                             <button onClick={() => removeEditPlantRow(index)} style={deleteBtnStyle}>X</button>
                                         </div>
                                     ))}
@@ -335,20 +309,20 @@ const Products = () => {
 
                                 {/* Supplies inside Modal */}
                                 <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Supplies</label>
+                                    <label style={{ ...labelStyle, color: '#2d6a4f' }}>Supplies</label>
                                     {(editingProduct?.supplies || []).map((item, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                                            <select 
-                                                value={item.supply?._id || item.supply || ''} 
+                                            <select
+                                                value={item.supply?._id || item.supply || ''}
                                                 onChange={(e) => handleEditSupplySelection(index, e.target.value)}
-                                                style={{...inputStyle, flex: 2}}
+                                                style={{ ...inputStyle, flex: 2 }}
                                             >
                                                 <option value="">Select...</option>
                                                 {suppliesData.filter(s => s.type !== 'Pot').map(s => (
                                                     <option key={s._id} value={s._id}>{s.name}</option>
                                                 ))}
                                             </select>
-                                            <input type="number" value={item.gramsUsed || ''} onChange={(e) => handleEditSupplyGrams(index, e.target.value)} style={{...inputStyle, flex: 1}} placeholder="g" />
+                                            <input type="number" value={item.gramsUsed || ''} onChange={(e) => handleEditSupplyGrams(index, e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="g" />
                                             <button onClick={() => removeEditSupplyRow(index)} style={deleteBtnStyle}>X</button>
                                         </div>
                                     ))}
@@ -358,13 +332,13 @@ const Products = () => {
                                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                     <div style={{ flex: 1 }}>
                                         <label style={labelStyle}>Pot</label>
-                                        <select 
-                                            name="pot" 
-                                            value={editingProduct?.pot?._id || editingProduct?.pot || ''} 
+                                        <select
+                                            name="pot"
+                                            value={editingProduct?.pot?._id || editingProduct?.pot || ''}
                                             onChange={(e) => {
                                                 const selectedPot = suppliesData.find(s => s._id === e.target.value) || null;
                                                 setEditingProduct({ ...editingProduct, pot: selectedPot });
-                                            }} 
+                                            }}
                                             style={inputStyle}
                                         >
                                             <option value="">Select Pot...</option>
@@ -384,7 +358,7 @@ const Products = () => {
                                 </div>
                             </>
                         )}
-                        
+
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Stock</label>
@@ -403,11 +377,11 @@ const Products = () => {
                                 <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#555' }}>Unit Cost</span><br/>
+                                <span style={{ fontSize: '0.85em', color: '#555' }}>Unit Cost</span><br />
                                 <strong>{formatCurrency(editTotalCost)}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Unit Selling Price</span><br/>
+                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Unit Selling Price</span><br />
                                 <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice, true)}</strong>
                             </div>
 
@@ -416,11 +390,11 @@ const Products = () => {
                                 <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#555' }}>Total Cost ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <span style={{ fontSize: '0.85em', color: '#555' }}>Total Cost ({editingProduct?.stockQuantity || 0} items)</span><br />
                                 <strong>{formatCurrency(editTotalCost * (Number(editingProduct?.stockQuantity) || 0))}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br />
                                 <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
                             </div>
                         </div>

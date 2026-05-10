@@ -155,7 +155,7 @@ const styles = {
         zIndex: 1000
     },
     floatingBtn: {
-        backgroundColor: '#2d6a4f',
+        backgroundColor: '#0A3323',
         color: 'white',
         border: 'none',
         borderRadius: '30px',
@@ -172,7 +172,7 @@ const styles = {
         position: 'absolute',
         top: '-5px',
         right: '-5px',
-        backgroundColor: 'red',
+        backgroundColor: '#D3968C',
         color: 'white',
         borderRadius: '50%',
         padding: '4px 8px',
@@ -190,7 +190,7 @@ const styles = {
         overflow: 'hidden'
     },
     header: {
-        backgroundColor: '#2d6a4f',
+        backgroundColor: '#0A3323',
         color: 'white',
         padding: '15px',
         display: 'flex',
