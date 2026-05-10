@@ -14,6 +14,24 @@ import CustomerChatbox from './components/CustomerChatbox';
 const AppContent = () => {
   const { user, logout } = useContext(AuthContext);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+  const openLogin = () => {
+    setIsRegisterModalOpen(false);
+    setIsLoginModalOpen(true);
+  };
+
+  const openRegister = () => {
+    setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(true);
+  };
+
+  const closeModals = () => {
+    setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(false);
+  };
 
   return (
     <div>
@@ -85,13 +103,13 @@ const AppContent = () => {
                 <button onClick={logout} style={{ background: 'transparent', color: '#F7F4D5', border: '1px solid #F7F4D5', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
               </>
             ) : (
-              <Link to="/login" style={{ ...navLinkStyle, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div onClick={openLogin} style={{ ...navLinkStyle, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#F7F4D5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M20.5899 22C20.5899 18.13 16.7399 15 11.9999 15C7.25991 15 3.40991 18.13 3.40991 22" stroke="#F7F4D5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Login
-              </Link>
+              </div>
             )}
             
             <Link to="/" style={{ ...navLinkStyle, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -108,16 +126,22 @@ const AppContent = () => {
 
       <Routes>
         <Route path="/" element={<Products searchTerm={searchTerm} />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
         {/* Protected Routes (Fallback to home if not admin) */}
         <Route path="/calculator" element={user?.role === 'Admin' ? <SmartCalculator /> : <Products searchTerm={searchTerm} />} /> 
         <Route path="/supplies" element={user?.role === 'Admin' ? <Supplies /> : <Products searchTerm={searchTerm} />} />
         <Route path="/sales" element={user?.role === 'Admin' ? <Sales /> : <Products searchTerm={searchTerm} />} />
         <Route path="/dashboard" element={user?.role === 'Admin' ? <Dashboard /> : <Products searchTerm={searchTerm} />} />
       </Routes>
+
       {user?.role === 'Customer' && <CustomerChatbox />}
+
+      {/* Modals */}
+      {isLoginModalOpen && !user && (
+        <Login onClose={closeModals} onSwitchToRegister={openRegister} />
+      )}
+      {isRegisterModalOpen && !user && (
+        <Register onClose={closeModals} onSwitchToLogin={openLogin} />
+      )}
     </div>
   );
 };
