@@ -320,7 +320,7 @@ const Products = ({ searchTerm = '' }) => {
             {editingProduct && (
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
-                        <h3 style={{ marginTop: 0, color: '#1b4332', textAlign: 'center' }}> Advanced Edit</h3>
+                        <h3 style={{ marginTop: 0, color: '#0A3323', textAlign: 'center' }}> Advanced Edit</h3>
                         
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <div style={{ flex: 2 }}>
@@ -353,8 +353,8 @@ const Products = ({ searchTerm = '' }) => {
                         {/* Plants List inside Modal */}
                         {editingProduct?.type === 'Arrangement' && (
                             <>
-                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Plants & Costs</label>
+                                <div style={{ padding: '10px', backgroundColor: 'white', border: '1px solid #0A3323', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#0A3323'}}>Plants & Costs</label>
                                     {(editingProduct?.plants || []).map((plant, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
                                             <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{...inputStyle, flex: 2}} />
@@ -366,8 +366,8 @@ const Products = ({ searchTerm = '' }) => {
                                 </div>
 
                                 {/* Supplies inside Modal */}
-                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Supplies</label>
+                                <div style={{ padding: '10px', backgroundColor: 'white', border: '1px solid #0A3323', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#0A3323'}}>Supplies</label>
                                     {(editingProduct?.supplies || []).map((item, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
                                             <select 
@@ -429,31 +429,31 @@ const Products = ({ searchTerm = '' }) => {
                         </div>
 
                         {/* Live Recalculation Display */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', backgroundColor: 'white', border: '1px solid #0A3323', padding: '10px', borderRadius: '5px' }}>
                             {/* Per Unit Breakdown */}
                             <div style={{ textAlign: 'center', gridColumn: '1 / -1' }}>
-                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#0A3323', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <span style={{ fontSize: '0.85em', color: '#555' }}>Unit Cost</span><br/>
                                 <strong>{formatCurrency(editTotalCost)}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Unit Selling Price</span><br/>
-                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice, true)}</strong>
+                                <span style={{ fontSize: '0.85em', color: '#0A3323' }}>Unit Selling Price</span><br/>
+                                <strong style={{ color: '#0A3323' }}>{formatCurrency(editSellingPrice, true)}</strong>
                             </div>
 
                             {/* Overall Inventory Value */}
-                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', marginTop: '10px', borderTop: '1px dashed #ccc', paddingTop: '10px' }}>
-                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', marginTop: '10px', borderTop: '1px dashed #0A3323', paddingTop: '10px' }}>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#0A3323', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <span style={{ fontSize: '0.85em', color: '#555' }}>Total Cost ({editingProduct?.stockQuantity || 0} items)</span><br/>
                                 <strong>{formatCurrency(editTotalCost * (Number(editingProduct?.stockQuantity) || 0))}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
-                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
+                                <span style={{ fontSize: '0.85em', color: '#0A3323' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <strong style={{ color: '#0A3323' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
                             </div>
                         </div>
 
@@ -482,17 +482,17 @@ const overlayStyle = {
     alignItems: 'center', zIndex: 1000
 };
 const modalStyle = {
-    backgroundColor: 'white', padding: '25px', borderRadius: '10px',
+    backgroundColor: '#fafafa', padding: '25px', borderRadius: '10px',
     width: '450px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
 };
-const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#555', marginBottom: '-5px' };
-const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '5px', width: '100%', boxSizing: 'border-box' };
-const saveBtnStyle = { flex: 1, padding: '10px', background: '#2d6a4f', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
-const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
-const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
+const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#0A3323', marginBottom: '-5px' };
+const inputStyle = { padding: '8px', border: '1px solid #0A3323', borderRadius: '5px', width: '100%', boxSizing: 'border-box', backgroundColor: '#F7F4D5', color: '#0A3323', outline: 'none' };
+const saveBtnStyle = { flex: 1, padding: '10px', background: '#105666', color: '#F7F4D5', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+const cancelBtnStyle = { flex: 1, padding: '10px', background: '#D3968C', color: '#F7F4D5', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+const iconBtnStyle = { background: '#105666', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #0A3323', background: '#F7F4D5', color: '#0A3323', fontWeight: 'bold' };
+const deleteBtnStyle = { color: '#D3968C', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
+const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#105666', color: '#F7F4D5', border: 'none', borderRadius: '20px', padding: '8px 16px', fontWeight: 'bold', transition: 'background 0.3s' };
 
 export default Products;
