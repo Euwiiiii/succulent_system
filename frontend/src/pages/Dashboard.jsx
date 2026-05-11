@@ -19,7 +19,7 @@ const Dashboard = () => {
 
     return (
         <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h2 style={{ color: '#0A3323' }}>Seller Dashboard</h2>
+
 
             <div style={{ marginBottom: '30px' }}>
                 <AdminChat />
