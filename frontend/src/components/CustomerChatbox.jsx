@@ -89,12 +89,18 @@ const CustomerChatbox = () => {
         }
     };
 
+    const formatTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
     return (
         <div style={styles.container}>
             {isOpen ? (
                 <div style={styles.chatWindow}>
                     <div style={styles.header}>
-                        <h4 style={{ margin: 0 }}>Chat with us</h4>
+                        <h4 style={{ margin: 0, fontWeight: 'bold' }}>Chat with us</h4>
                         <button onClick={() => setIsOpen(false)} style={styles.closeBtn}>&times;</button>
                     </div>
                     
@@ -102,23 +108,37 @@ const CustomerChatbox = () => {
                         {messages.length === 0 ? (
                             <p style={styles.emptyText}>No messages yet. Start a conversation!</p>
                         ) : (
-                            messages.map((msg, idx) => (
-                                <div key={idx} style={{
-                                    ...styles.messageWrapper,
-                                    justifyContent: msg.senderId === user._id ? 'flex-end' : 'flex-start'
-                                }}>
-                                    <div style={{
-                                        ...styles.messageBubble,
-                                        backgroundColor: msg.senderId === user._id ? '#2d6a4f' : '#f1f1f1',
-                                        color: msg.senderId === user._id ? 'white' : 'black'
+                            messages.map((msg, idx) => {
+                                const isCustomer = msg.senderId === user._id;
+                                return (
+                                    <div key={idx} style={{
+                                        ...styles.messageWrapper,
+                                        alignItems: isCustomer ? 'flex-end' : 'flex-start'
                                     }}>
-                                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '2px' }}>
-                                            {msg.senderName} {msg.senderId !== user._id && (msg.senderRole === 'Admin' ? ' (Admin)' : '')}
+                                        <div style={{
+                                            ...styles.messageBubble,
+                                            backgroundColor: isCustomer ? '#105666' : '#839958',
+                                            color: isCustomer ? 'white' : '#0A3323',
+                                            borderBottomRightRadius: isCustomer ? '4px' : '15px',
+                                            borderBottomLeftRadius: isCustomer ? '15px' : '4px'
+                                        }}>
+                                            <div style={{ 
+                                                fontSize: '11px', 
+                                                fontWeight: 'bold', 
+                                                marginBottom: '4px', 
+                                                opacity: 0.8,
+                                                textAlign: isCustomer ? 'right' : 'left'
+                                            }}>
+                                                {msg.senderName} {!isCustomer && (msg.senderRole === 'Admin' ? ' (Admin)' : '')}
+                                            </div>
+                                            <div style={{ lineHeight: '1.4' }}>{msg.content}</div>
                                         </div>
-                                        {msg.content}
+                                        <div style={{ fontSize: '10px', color: '#888', marginTop: '4px', margin: isCustomer ? '4px 4px 0 0' : '4px 0 0 4px' }}>
+                                            {formatTime(msg.timestamp || msg.createdAt)}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                         <div ref={messagesEndRef} />
                     </div>
@@ -131,12 +151,19 @@ const CustomerChatbox = () => {
                             placeholder="Type a message..."
                             style={styles.input}
                         />
-                        <button type="submit" style={styles.sendBtn}>Send</button>
+                        <button type="submit" style={styles.sendBtn} title="Send">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
                     </form>
                 </div>
             ) : (
                 <button onClick={() => setIsOpen(true)} style={styles.floatingBtn}>
-                    <img src="/svg/succulent.svg" alt="Chat" style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }} />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
                     <span style={{ marginLeft: '8px' }}>Chat</span>
                     {conversation && conversation.unreadByCustomer > 0 && (
                         <span style={styles.badge}>{conversation.unreadByCustomer}</span>
@@ -155,44 +182,46 @@ const styles = {
         zIndex: 1000
     },
     floatingBtn: {
-        backgroundColor: '#2d6a4f',
-        color: 'white',
+        backgroundColor: '#0A3323',
+        color: '#F7F4D5',
         border: 'none',
         borderRadius: '30px',
-        padding: '12px 24px',
+        padding: '14px 24px',
         fontSize: '16px',
         fontWeight: 'bold',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-        position: 'relative'
+        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+        position: 'relative',
+        transition: 'transform 0.2s'
     },
     badge: {
         position: 'absolute',
         top: '-5px',
         right: '-5px',
-        backgroundColor: 'red',
+        backgroundColor: '#D3968C',
         color: 'white',
         borderRadius: '50%',
         padding: '4px 8px',
         fontSize: '12px',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
     },
     chatWindow: {
         width: '350px',
         height: '450px',
         backgroundColor: 'white',
-        borderRadius: '10px',
-        boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+        borderRadius: '12px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'
     },
     header: {
-        backgroundColor: '#2d6a4f',
-        color: 'white',
-        padding: '15px',
+        backgroundColor: '#0A3323',
+        color: '#F7F4D5',
+        padding: '15px 20px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center'
@@ -200,56 +229,67 @@ const styles = {
     closeBtn: {
         background: 'transparent',
         border: 'none',
-        color: 'white',
+        color: '#F7F4D5',
         fontSize: '24px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        lineHeight: '1'
     },
     messageList: {
         flex: 1,
-        padding: '15px',
+        padding: '20px 15px',
         overflowY: 'auto',
-        backgroundColor: '#fafafa',
+        backgroundColor: '#F7F4D5',
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px'
+        gap: '15px'
     },
     emptyText: {
         textAlign: 'center',
         color: '#888',
-        marginTop: '20px'
+        marginTop: '20px',
+        fontSize: '14px'
     },
     messageWrapper: {
         display: 'flex',
+        flexDirection: 'column',
         width: '100%'
     },
     messageBubble: {
-        padding: '10px 15px',
+        padding: '12px 16px',
         borderRadius: '15px',
-        maxWidth: '75%',
-        wordWrap: 'break-word'
+        maxWidth: '80%',
+        wordWrap: 'break-word',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+        fontSize: '14px'
     },
     inputArea: {
         display: 'flex',
-        padding: '10px',
+        padding: '15px',
         borderTop: '1px solid #ddd',
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        alignItems: 'center',
+        gap: '10px'
     },
     input: {
         flex: 1,
-        padding: '10px',
-        border: '1px solid #ddd',
-        borderRadius: '20px',
-        marginRight: '10px',
-        outline: 'none'
+        padding: '12px 15px',
+        border: '1px solid #ccc',
+        borderRadius: '24px',
+        outline: 'none',
+        fontSize: '14px',
+        backgroundColor: '#fafafa'
     },
     sendBtn: {
-        backgroundColor: '#2d6a4f',
-        color: 'white',
+        backgroundColor: 'transparent',
+        color: '#0A3323',
         border: 'none',
-        borderRadius: '20px',
-        padding: '0 20px',
         cursor: 'pointer',
-        fontWeight: 'bold'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '8px',
+        borderRadius: '50%',
+        transition: 'background-color 0.2s'
     }
 };
 

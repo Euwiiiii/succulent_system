@@ -2,33 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { getProducts, deleteProduct, updateProduct, getSupplies, quickSellProduct, createRequest } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { calculateFinalPrices, formatCurrency } from '../utils/calculator';
+import ContactRequestModal from '../components/ContactRequestModal';
 
-const Products = () => {
+const Products = ({ searchTerm = '' }) => {
     const [products, setProducts] = useState([]);
     const [suppliesData, setSuppliesData] = useState([]);
     
     const [editingProduct, setEditingProduct] = useState(null);
     const [editTotalCost, setEditTotalCost] = useState(0);
     const [editSellingPrice, setEditSellingPrice] = useState(0);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [contactProduct, setContactProduct] = useState('');
 
     const { user } = React.useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('All');
 
     const filteredProducts = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === 'All' || p.type === filterType;
-        return matchesSearch && matchesType;
+        const lowerSearch = searchTerm.toLowerCase();
+        return p.name.toLowerCase().includes(lowerSearch) || (p.type && p.type.toLowerCase().includes(lowerSearch));
+    }).sort((a, b) => {
+        if (a.stockQuantity > 0 && b.stockQuantity <= 0) return -1;
+        if (a.stockQuantity <= 0 && b.stockQuantity > 0) return 1;
+        return 0;
     });
 
     const handleRequest = async (product) => {
-        if (!user) {
-            alert('Please login to send a request/inquiry.');
-            return;
-        }
-        window.dispatchEvent(new CustomEvent('open-chat', { 
-            detail: { productId: product._id, productName: product.name }
-        }));
+        setContactProduct(product.name);
+        setIsContactModalOpen(true);
     };
 
     useEffect(() => {
@@ -174,33 +173,13 @@ const Products = () => {
 
     return (
         <div style={{ padding: '20px'}}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ padding: '20px 0', fontSize: '2rem', color: '#2d6a4f', fontWeight: 'bold'}}>SUCCULENT SYSTEM INVENTORY</h2>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <input 
-                        type="text" 
-                        placeholder="Search items..." 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px' }}
-                    />
-                    <select 
-                        value={filterType} 
-                        onChange={(e) => setFilterType(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-                    >
-                        <option value="All">All Types</option>
-                        <option value="Single Plant">Single Plant</option>
-                        <option value="Arrangement">Arrangement</option>
-                    </select>
-                </div>
-            </div>
+            <h2 style={{ padding: '20px 0', fontSize: '2rem', color: '#0A3323', fontWeight: 'bold', margin: 0, textAlign: 'left' }}>Our Collection</h2>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 {filteredProducts.length === 0 ? <p>No succulents match your search.</p> : null}
                 
                 {filteredProducts.map((product) => (
-                    <div key={product._id} style={{ border: '1px solid #ccc', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '8px', backgroundColor: '#fdfdfd', position: 'relative' }}>
+                    <div key={product._id} style={{ border: '1px solid #839958', padding: '15px', width: '100%', boxSizing: 'border-box', borderRadius: '12px', backgroundColor: '#F7F4D5', position: 'relative', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                         
                         {user?.role === 'Admin' && (
                             <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }} > 
@@ -224,13 +203,13 @@ const Products = () => {
                             </div>
                         )}
                         
-                        <h3 style={{ margin: '0 0 5px 0', color: '#1b4332', textAlign: 'left' }}>{product.name}</h3>
+                        <h3 style={{ margin: '0 0 5px 0', color: '#0A3323', textAlign: 'left' }}>{product.name}</h3>
                         <p style={{ fontStyle: 'italic', color: 'gray', marginTop: '0', fontSize: '0.9em' }}>{product.type}</p>
                         
                         {product.imageUrl && <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '5px' }} />}
                         
-                        {product.plants && product.plants.length > 0 && (
-                            <div style={{ margin: '15px 0', padding: '10px', backgroundColor: '#e9ecef', borderRadius: '5px', fontSize: '0.85em', textAlign: 'left' }}>
+                        {product.type === 'Arrangement' && product.plants && product.plants.length > 0 && (
+                            <div style={{ margin: '15px 0', padding: '10px', backgroundColor: 'rgba(131, 153, 88, 0.15)', borderRadius: '5px', fontSize: '0.85em', textAlign: 'left', color: '#0A3323', border: '1px solid rgba(131, 153, 88, 0.3)' }}>
                                 <strong>Varieties:</strong>
                                 <ul style={{ margin: '5px 0', paddingLeft: '20px', listStyleType: 'none', left: '10px', textAlign: 'left' }}>
                                     {product.plants.map(plant => (
@@ -240,47 +219,100 @@ const Products = () => {
                             </div>
                         )}
                         
-                        <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                                <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
-                            </p>
-                            <p style={{ margin: '5px 0', color: '#2d6a4f', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                                <strong>Selling Price:</strong> {formatCurrency(product.sellingPrice, true)}
-                            </p>
-                        </div>
-                        <hr style={{ borderColor: '#eee', margin: '15px 0' }} />
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold' }}>
-                                Stock: {product.stockQuantity} 
-                                {product.stockQuantity < 2 && " Low!"}
-                            </p>
-                            
-                            {user?.role === 'Admin' ? (
-                                <button 
-                                    onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
-                                    disabled={product.stockQuantity <= 0}
-                                    style={{
-                                        ...quickSellBtnStyle,
-                                        opacity: product.stockQuantity <= 0 ? 0.5 : 1,
-                                        cursor: product.stockQuantity <= 0 ? 'not-allowed' : 'pointer'
-                                    }}
-                                    title="Quick Sell 1 Unit"
-                                >
-                                    <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
-                                </button>
-                            ) : (
-                                <button 
-                                    onClick={() => handleRequest(product)}
-                                    style={{
-                                        ...quickSellBtnStyle,
-                                        background: '#17a2b8'
-                                    }}
-                                >
-                                    💬 Request
-                                </button>
+                        <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px', marginBottom: '15px' }}>
+                            {user?.role === 'Admin' && (
+                                <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
+                                    <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
+                                </p>
                             )}
+                            <p style={{ margin: '5px 0', color: '#105666', fontSize: '1.3rem', fontWeight: 'bold' }}>
+                                {formatCurrency(product.sellingPrice, true)}
+                            </p>
                         </div>
+                        
+                        {product.stockQuantity <= 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
+                                {user?.role === 'Admin' ? (
+                                    <button 
+                                        onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
+                                        disabled={true}
+                                        style={{
+                                            ...quickSellBtnStyle,
+                                            opacity: 0.5,
+                                            cursor: 'not-allowed',
+                                            width: '100%'
+                                        }}
+                                        title="Quick Sell 1 Unit"
+                                    >
+                                        <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => handleRequest(product)}
+                                        style={{
+                                            ...quickSellBtnStyle,
+                                            background: '#D3968C',
+                                            color: '#F7F4D5',
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                        Request
+                                    </button>
+                                )}
+                                <div style={{ color: '#C1121F', fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', letterSpacing: '1px', width: '100%' }}>
+                                    OUT OF STOCK
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
+                                {user?.role === 'Admin' ? (
+                                    <button 
+                                        onClick={() => handleQuickSell(product._id, product.name, product.stockQuantity)}
+                                        style={{
+                                            ...quickSellBtnStyle,
+                                            cursor: 'pointer',
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px'
+                                        }}
+                                        title="Quick Sell 1 Unit"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                        Sell 1
+                                    </button>
+                                ) : (
+                                    <button 
+                                        className="primary-btn"
+                                        style={{ 
+                                            ...quickSellBtnStyle, 
+                                            background: '#105666', 
+                                            color: '#F7F4D5', 
+                                            fontWeight: 'bold', 
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px'
+                                        }}
+                                        onClick={() => alert("Add to Cart functionality coming soon!")}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                        Add to Cart
+                                    </button>
+                                )}
+                                <p style={{ margin: 0, color: 'green', fontWeight: 'bold', textAlign: 'center' }}>
+                                    Stock: {product.stockQuantity} 
+                                    {product.stockQuantity < 2 && " Low!"}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -288,7 +320,7 @@ const Products = () => {
             {editingProduct && (
                 <div style={overlayStyle}>
                     <div style={modalStyle}>
-                        <h3 style={{ marginTop: 0, color: '#1b4332', textAlign: 'center' }}> Advanced Edit</h3>
+                        <h3 style={{ marginTop: 0, color: '#0A3323', textAlign: 'center' }}> Advanced Edit</h3>
                         
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <div style={{ flex: 2 }}>
@@ -321,8 +353,8 @@ const Products = () => {
                         {/* Plants List inside Modal */}
                         {editingProduct?.type === 'Arrangement' && (
                             <>
-                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Plants & Costs</label>
+                                <div style={{ padding: '10px', backgroundColor: 'white', border: '1px solid #0A3323', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#0A3323'}}>Plants & Costs</label>
                                     {(editingProduct?.plants || []).map((plant, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
                                             <input value={plant?.name || ''} onChange={(e) => handleEditPlantChange(index, 'name', e.target.value)} style={{...inputStyle, flex: 2}} />
@@ -334,8 +366,8 @@ const Products = () => {
                                 </div>
 
                                 {/* Supplies inside Modal */}
-                                <div style={{ padding: '10px', backgroundColor: '#f8fffb', border: '1px solid #d4edda', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
-                                    <label style={{...labelStyle, color: '#2d6a4f'}}>Supplies</label>
+                                <div style={{ padding: '10px', backgroundColor: 'white', border: '1px solid #0A3323', borderRadius: '5px', marginTop: '10px', maxHeight: '150px', overflowY: 'auto' }}>
+                                    <label style={{...labelStyle, color: '#0A3323'}}>Supplies</label>
                                     {(editingProduct?.supplies || []).map((item, index) => (
                                         <div key={index} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
                                             <select 
@@ -397,31 +429,31 @@ const Products = () => {
                         </div>
 
                         {/* Live Recalculation Display */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', backgroundColor: '#e9ecef', padding: '10px', borderRadius: '5px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px', backgroundColor: 'white', border: '1px solid #0A3323', padding: '10px', borderRadius: '5px' }}>
                             {/* Per Unit Breakdown */}
                             <div style={{ textAlign: 'center', gridColumn: '1 / -1' }}>
-                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#0A3323', fontSize: '0.9rem' }}>Per Unit Breakdown</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <span style={{ fontSize: '0.85em', color: '#555' }}>Unit Cost</span><br/>
                                 <strong>{formatCurrency(editTotalCost)}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Unit Selling Price</span><br/>
-                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice, true)}</strong>
+                                <span style={{ fontSize: '0.85em', color: '#0A3323' }}>Unit Selling Price</span><br/>
+                                <strong style={{ color: '#0A3323' }}>{formatCurrency(editSellingPrice, true)}</strong>
                             </div>
 
                             {/* Overall Inventory Value */}
-                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', marginTop: '10px', borderTop: '1px dashed #ccc', paddingTop: '10px' }}>
-                                <h4 style={{ margin: '0 0 5px 0', color: '#1b4332', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', marginTop: '10px', borderTop: '1px dashed #0A3323', paddingTop: '10px' }}>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#0A3323', fontSize: '0.9rem' }}>Overall Inventory Value</h4>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <span style={{ fontSize: '0.85em', color: '#555' }}>Total Cost ({editingProduct?.stockQuantity || 0} items)</span><br/>
                                 <strong>{formatCurrency(editTotalCost * (Number(editingProduct?.stockQuantity) || 0))}</strong>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '0.85em', color: '#2d6a4f' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
-                                <strong style={{ color: '#2d6a4f' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
+                                <span style={{ fontSize: '0.85em', color: '#0A3323' }}>Total Value ({editingProduct?.stockQuantity || 0} items)</span><br/>
+                                <strong style={{ color: '#0A3323' }}>{formatCurrency(editSellingPrice * (Number(editingProduct?.stockQuantity) || 0), true)}</strong>
                             </div>
                         </div>
 
@@ -432,6 +464,13 @@ const Products = () => {
                     </div>
                 </div>
             )}
+            {/* Admin actions could go here */}
+            
+            <ContactRequestModal 
+                isOpen={isContactModalOpen} 
+                onClose={() => setIsContactModalOpen(false)} 
+                initialProduct={contactProduct} 
+            />
         </div>
     );
 };
@@ -443,17 +482,17 @@ const overlayStyle = {
     alignItems: 'center', zIndex: 1000
 };
 const modalStyle = {
-    backgroundColor: 'white', padding: '25px', borderRadius: '10px',
+    backgroundColor: '#fafafa', padding: '25px', borderRadius: '10px',
     width: '450px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
 };
-const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#555', marginBottom: '-5px' };
-const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '5px', width: '100%', boxSizing: 'border-box' };
-const saveBtnStyle = { flex: 1, padding: '10px', background: '#2d6a4f', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
-const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
-const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
+const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#0A3323', marginBottom: '-5px' };
+const inputStyle = { padding: '8px', border: '1px solid #0A3323', borderRadius: '5px', width: '100%', boxSizing: 'border-box', backgroundColor: '#F7F4D5', color: '#0A3323', outline: 'none' };
+const saveBtnStyle = { flex: 1, padding: '10px', background: '#105666', color: '#F7F4D5', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+const cancelBtnStyle = { flex: 1, padding: '10px', background: '#D3968C', color: '#F7F4D5', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+const iconBtnStyle = { background: '#105666', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #0A3323', background: '#F7F4D5', color: '#0A3323', fontWeight: 'bold' };
+const deleteBtnStyle = { color: '#D3968C', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
+const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#105666', color: '#F7F4D5', border: 'none', borderRadius: '20px', padding: '8px 16px', fontWeight: 'bold', transition: 'background 0.3s' };
 
 export default Products;
