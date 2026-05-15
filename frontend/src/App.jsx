@@ -31,7 +31,7 @@ const AppContent = () => {
         </h2>
         
         <Link to="/" style={navLinkStyle}>
-          <img src="/svg/inventory.svg" alt="Inventory" style={{ width: '20px', height: '20px' }} />
+          <img src="/svg/box.svg" alt="Inventory" style={iconStyle} />
           Inventory
         </Link>
         
@@ -55,8 +55,10 @@ const AppContent = () => {
             </>
           ) : (
             <>
-              <Link to="/login" style={navLinkStyle}>Login</Link>
-              <Link to="/register" style={{ ...navLinkStyle, border: '1px solid white', padding: '5px 10px', borderRadius: '5px' }}>Register</Link>
+              <Link to="/login" style={navLinkStyle}>
+                <img src="/svg/user-profile-03.svg" alt="Login" style={iconStyle} />
+                Login
+              </Link>
             </>
           )}
         </div>
@@ -89,5 +91,6 @@ function App() {
 }
 
 const navLinkStyle = { color: 'white', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' };
+const iconStyle = { width: '24px', height: '24px', flex: 'none', order: 0, flexGrow: 0 };
 
 export default App;

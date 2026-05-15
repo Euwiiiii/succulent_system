@@ -241,9 +241,11 @@ const Products = () => {
                         )}
                         
                         <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                                <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
-                            </p>
+                            {user?.role === 'Admin' && (
+                                <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
+                                    <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
+                                </p>
+                            )}
                             <p style={{ margin: '5px 0', color: '#2d6a4f', fontSize: '1.1rem', fontWeight: 'bold' }}>
                                 <strong>Selling Price:</strong> {formatCurrency(product.sellingPrice, true)}
                             </p>
