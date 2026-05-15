@@ -43,10 +43,10 @@ const Login = () => {
                         required
                     />
                     <button type="submit" style={btnStyle}>Login</button>
+                    <p style={{ textAlign: 'center', marginTop: '5px' }}>
+                        Don't have an account? <Link to="/register" style={{ color: '#2d6a4f' }}>Register</Link>
+                    </p>
                 </form>
-                <p style={{ textAlign: 'center', marginTop: '15px' }}>
-                    Don't have an account? <Link to="/register" style={{ color: '#2d6a4f' }}>Register</Link>
-                </p>
             </div>
         </div>
     );
