@@ -102,23 +102,46 @@ const CustomerChatbox = () => {
                         {messages.length === 0 ? (
                             <p style={styles.emptyText}>No messages yet. Start a conversation!</p>
                         ) : (
-                            messages.map((msg, idx) => (
-                                <div key={idx} style={{
-                                    ...styles.messageWrapper,
-                                    justifyContent: msg.senderId === user._id ? 'flex-end' : 'flex-start'
-                                }}>
-                                    <div style={{
-                                        ...styles.messageBubble,
-                                        backgroundColor: msg.senderId === user._id ? '#2d6a4f' : '#f1f1f1',
-                                        color: msg.senderId === user._id ? 'white' : 'black'
-                                    }}>
-                                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '2px' }}>
-                                            {msg.senderName} {msg.senderId !== user._id && (msg.senderRole === 'Admin' ? ' (Admin)' : '')}
+                            messages.map((msg, idx) => {
+                                const isSelf = msg.senderId === user._id;
+                                const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                                const showTime = !prevMsg || (new Date(msg.createdAt || Date.now()) - new Date(prevMsg.createdAt || Date.now())) > 5 * 60 * 1000;
+                                const isContinuation = !showTime && prevMsg?.senderId === msg.senderId;
+
+                                return (
+                                    <React.Fragment key={idx}>
+                                        {showTime && (
+                                            <div style={{ textAlign: 'center', fontSize: '11px', color: '#888', margin: '15px 0 5px' }}>
+                                                -- {new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()} --
+                                            </div>
+                                        )}
+                                        <div style={{
+                                            ...styles.messageWrapper,
+                                            justifyContent: isSelf ? 'flex-end' : 'flex-start',
+                                            marginTop: isContinuation ? '2px' : '10px'
+                                        }}>
+                                            <div style={{
+                                                ...styles.messageBubble,
+                                                backgroundColor: isSelf ? 'var(--moss-green)' : '#f1f1f1',
+                                                color: isSelf ? 'white' : 'black',
+                                                textAlign: 'left',
+                                                borderRadius: isSelf 
+                                                    ? (isContinuation ? '15px 4px 4px 15px' : '15px 15px 4px 15px')
+                                                    : (isContinuation ? '4px 15px 15px 4px' : '15px 15px 15px 4px')
+                                            }}>
+                                                {(!isContinuation || showTime) && (
+                                                    <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '3px', opacity: 0.8 }}>
+                                                        {isSelf ? 'You' : msg.senderName}
+                                                    </div>
+                                                )}
+                                                <div style={{ fontSize: '14px', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
+                                                    {msg.content}
+                                                </div>
+                                            </div>
                                         </div>
-                                        {msg.content}
-                                    </div>
-                                </div>
-                            ))
+                                    </React.Fragment>
+                                );
+                            })
                         )}
                         <div ref={messagesEndRef} />
                     </div>
@@ -155,7 +178,7 @@ const styles = {
         zIndex: 1000
     },
     floatingBtn: {
-        backgroundColor: '#2d6a4f',
+        backgroundColor: 'var(--dark-green)',
         color: 'white',
         border: 'none',
         borderRadius: '30px',
@@ -172,7 +195,7 @@ const styles = {
         position: 'absolute',
         top: '-5px',
         right: '-5px',
-        backgroundColor: 'red',
+        backgroundColor: 'var(--rosy-brown)',
         color: 'white',
         borderRadius: '50%',
         padding: '4px 8px',
@@ -190,7 +213,7 @@ const styles = {
         overflow: 'hidden'
     },
     header: {
-        backgroundColor: '#2d6a4f',
+        backgroundColor: 'var(--dark-green)',
         color: 'white',
         padding: '15px',
         display: 'flex',
@@ -243,7 +266,7 @@ const styles = {
         outline: 'none'
     },
     sendBtn: {
-        backgroundColor: '#2d6a4f',
+        backgroundColor: 'var(--midnight-green)',
         color: 'white',
         border: 'none',
         borderRadius: '20px',

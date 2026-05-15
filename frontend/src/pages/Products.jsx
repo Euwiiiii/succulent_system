@@ -183,7 +183,7 @@ const Products = () => {
                         placeholder="Search items..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px' }}
+                        style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', width: '200px', backgroundColor: 'var(--beige)' }}
                     />
                     <select
                         value={filterType}
@@ -219,7 +219,7 @@ const Products = () => {
                                 >
                                     <img src="/svg/edit.svg" style={{ width: '18px', height: '18px' }} />
                                 </button>
-                                <button onClick={() => handleDelete(product._id, product.name)} style={{ ...iconBtnStyle, background: '#ff4d4f' }}>
+                                <button onClick={() => handleDelete(product._id, product.name)} style={{ ...iconBtnStyle, background: 'var(--rosy-brown)' }}>
                                     <img src="/svg/delete.svg" style={{ width: '18px', height: '18px' }} />
                                 </button>
                             </div>
@@ -267,14 +267,21 @@ const Products = () => {
                                     }}
                                     title="Quick Sell 1 Unit"
                                 >
-                                    <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>🛒</span> Sell 1
+                                    <span style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }}>
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 2L3 6.58579L10 13.5858L14.5858 9L7.58579 2L3 2ZM2 2C2 1.44772 2.44772 1 3 1H7.58579C7.851 1 8.10536 1.10536 8.29289 1.29289L15.2929 8.29289C15.6834 8.68342 15.6834 9.31658 15.2929 9.70711L10.7071 14.2929C10.3166 14.6834 9.68342 14.6834 9.29289 14.2929L2.29289 7.29289C2.10536 7.10536 2 6.851 2 6.58579V2Z" fill="currentColor"/>
+                                            <path d="M5.5 5C5.22386 5 5 4.77614 5 4.5C5 4.22386 5.22386 4 5.5 4C5.77614 4 6 4.22386 6 4.5C6 4.77614 5.77614 5 5.5 5ZM5.5 6C6.32843 6 7 5.32843 7 4.5C7 3.67157 6.32843 3 5.5 3C4.67157 3 4 3.67157 4 4.5C4 5.32843 4.67157 6 5.5 6Z" fill="currentColor"/>
+                                            <path d="M1 7.08579C1 7.351 1.10536 7.60536 1.29289 7.79289L8.75 15.25L8.70711 15.2929C8.31658 15.6834 7.68342 15.6834 7.29289 15.2929L0.292892 8.29289C0.105356 8.10536 0 7.851 0 7.58579V3C0 2.44772 0.447715 2 1 2V7.08579Z" fill="currentColor"/>
+                                        </svg>
+                                    </span> 
+                                    Sell 1
                                 </button>
                             ) : (
                                 <button
                                     onClick={() => handleRequest(product)}
                                     style={{
                                         ...quickSellBtnStyle,
-                                        background: '#17a2b8',
+                                        background: 'var(--midnight-green)',
                                         width: '100%',
                                         justifyContent: 'center',
                                         display: 'flex',
@@ -288,7 +295,7 @@ const Products = () => {
                                 </button>
                             )}
 
-                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'red' : 'green', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                            <p style={{ margin: 0, color: product.stockQuantity < 5 ? 'var(--rosy-brown)' : 'var(--moss-green)', fontWeight: 'bold', fontSize: '0.9rem' }}>
                                 Stock: {product.stockQuantity}
                                 {product.stockQuantity < 2 && " Low!"}
                             </p>
@@ -489,11 +496,11 @@ const modalStyle = {
 };
 const labelStyle = { fontSize: '0.85em', fontWeight: 'bold', color: '#555', marginBottom: '-5px' };
 const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '5px', width: '100%', boxSizing: 'border-box' };
-const saveBtnStyle = { flex: 1, padding: '10px', background: '#2d6a4f', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+const saveBtnStyle = { flex: 1, padding: '10px', background: 'var(--midnight-green)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
 const cancelBtnStyle = { flex: 1, padding: '10px', background: '#e9ecef', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
-const iconBtnStyle = { background: '#2d6a4f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const iconBtnStyle = { background: 'var(--dark-green)', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const addBtnStyle = { marginTop: '10px', padding: '5px 10px', fontSize: '0.8em', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc', background: 'white' };
 const deleteBtnStyle = { color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' };
-const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
+const quickSellBtnStyle = { display: 'flex', alignItems: 'center', background: 'var(--midnight-green)', color: 'white', border: 'none', borderRadius: '5px', padding: '6px 12px', fontWeight: 'bold', transition: 'background 0.3s' };
 
 export default Products;
