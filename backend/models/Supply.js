@@ -5,23 +5,19 @@ const supplySchema = new mongoose.Schema({
     type: { type: String, required: true, enum: ['Soil', 'Pot', 'Fertilizer'] },
     bulkPrice: { type: Number, required: true, default: 0 },
     shippingFee: { type: Number, required: true, default: 0 },
-    totalWeight: { type: Number, default: 0 }, // For Soil/Fertilizer
-    quantity: { type: Number, default: 0 } // For Pots
+    totalWeight: { type: Number, default: 0 }, // For Soil/Fertilizer (Current Stock)
+    quantity: { type: Number, default: 0 }, // For Pots (Current Stock)
+    
+    // Original Batch Sizes (Helps with future analytics and recalculations)
+    originalWeight: { type: Number },
+    originalQuantity: { type: Number },
+    
+    // Locked Unit Price
+    unitCost: { type: Number }
 }, { 
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    timestamps: true
 });
 
-// Virtual field for unitCost
-supplySchema.virtual('unitCost').get(function() {
-    if (this.type === 'Pot') {
-        if (!this.quantity || this.quantity === 0) return 0;
-        return (this.bulkPrice + this.shippingFee) / this.quantity;
-    } else {
-        if (!this.totalWeight || this.totalWeight === 0) return 0;
-        return (this.bulkPrice + this.shippingFee) / this.totalWeight;
-    }
-});
+// Removed virtual field since unitCost is now locked and saved to the database directly.
 
 module.exports = mongoose.model('Supply', supplySchema);

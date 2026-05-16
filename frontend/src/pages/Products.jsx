@@ -246,12 +246,20 @@ const Products = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                             {user?.role === 'Admin' && (
                                 <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                                    <strong>Cost Price:</strong> {formatCurrency(product.totalCost)}
+                                    <strong>Cost Price:</strong> {formatCurrency(calculateFinalPrices({
+                                        ...product,
+                                        costPrice: Number(product.costPrice) || Number(product.totalCost) || 0,
+                                        sellingPrice: Number(product.sellingPrice) || 0,
+                                    }).totalCost)}
                                 </p>
                             )}
 
                             <div style={{ color: '#2d6a4f', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                                {formatCurrency(product.sellingPrice, true)}
+                                {formatCurrency(calculateFinalPrices({
+                                    ...product,
+                                    costPrice: Number(product.costPrice) || Number(product.totalCost) || 0,
+                                    sellingPrice: Number(product.sellingPrice) || 0,
+                                }).sellingPrice, true)}
                             </div>
 
                             {user?.role === 'Admin' ? (
